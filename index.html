@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>VoidGifts</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="no-scroll">
+
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-container">
+      <div id="lottie-loading-container"></div>
+      <div class="loading-bar-wrapper">
+        <div class="loading-bar-bg">
+          <div class="loading-bar-fill"></div>
+        </div>
+      </div>
+      <div class="loading-text">
+        Entering the Void…
+      </div>
+      <a href="https://github.com/IMAGE002/Build1/blob/main/LICENSE" class="copyright-text" target="_blank" rel="noopener noreferrer">
+        © 2025 Copyright All Rights Reserved
+      </a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent" style="display:none;">
+
+    <div class="bg" id="bgContainer">
+      <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+        <defs>
+          <pattern id="tgPattern" patternUnits="userSpaceOnUse" width="562.5" height="1218" viewBox="0 0 1125 2436"></pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#tgPattern)" />
+      </svg>
+    </div>
+
+    <!-- Top bar: brand + currency readout + hamburger -->
+    <div class="topbar-fixed">
+      <div class="brand"><span class="ring"></span>VoidGifts</div>
+      <div style="display:flex; align-items:center; gap:.6rem;">
+        <div class="readout">
+          <div class="stat"><img src="assets/Coin.svg" alt=""><span id="currencyAmount">0</span></div>
+          <div class="sep"></div>
+          <div class="stat"><img src="assets/TStars.svg" alt=""><span id="starsAmount">0</span></div>
+        </div>
+        <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+
+    <!-- Nav menu (desktop / wide viewport) -->
+    <nav class="nav-menu" id="navMenu">
+      <button class="nav-close" id="navClose">×</button>
+      <div class="nav-account">
+        <div class="account-avatar"></div>
+        <div class="account-info">
+          <div class="account-name">Loading...</div>
+          <div class="account-username">@loading</div>
+        </div>
+      </div>
+      <ul>
+        <li><a href="#home" class="nav-link active" data-page="home">
+          <div class="nav-icon"><img src="assets/HomeIcon.svg" alt="Home"></div>
+          <span data-i18n="home">Home</span>
+        </a></li>
+        <li><a href="#leaderboard" class="nav-link" data-page="leaderboard">
+          <div class="nav-icon"><img src="assets/LBIcon.svg" alt="Leaderboard"></div>
+          <span data-i18n="leaderboard">Leaderboard</span>
+        </a></li>
+        <li><a href="#deposit" class="nav-link" data-page="deposit">
+          <div class="nav-icon"><img src="assets/WalletIcon.svg" alt="Deposit"></div>
+          <span data-i18n="deposit">Deposit</span>
+        </a></li>
+        <li><a href="#settings" class="nav-link" data-page="settings">
+          <div class="nav-icon"><img src="assets/GearIcon.svg" alt="Settings"></div>
+          <span data-i18n="settings">Settings</span>
+        </a></li>
+      </ul>
+    </nav>
+
+    <!-- Debug Panel -->
+    <div class="debug-panel" id="debugPanel">
+      <h2>Debug Panel</h2>
+      <button class="debug-btn" id="imitateWinBtn">Imitate Win</button>
+      <button class="debug-btn" id="clearAllBtn">Clear All Notifications</button>
+      <div class="debug-info">
+        <p><strong>Active Notifications:</strong> <span id="notificationCount">0</span></p>
+        <p><strong>Max Capacity:</strong> 15</p>
+        <p><strong>Current Page:</strong> <span id="currentPageDebug">home</span></p>
+      </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="container">
+
+      <!-- ============ HOME ============ -->
+      <div class="page-content active" id="page-home">
+
+        <div class="echo-strip-wrap" id="notificationContainer">
+          <!-- notification cubes injected by JS -->
+        </div>
+
+        <div class="home-grid">
+
+          <!-- Daily loot -->
+          <div class="hero hero--daily content-box-left-1" style="animation-delay:.05s;">
+            <div class="hero-glow"></div>
+            <div class="hero-asset" style="width:34px;height:34px;top:10px;left:10px;">
+              <div id="lottieAnimation" style="width:100%;height:100%;"></div>
+            </div>
+            <img class="hero-asset" src="assets/DailyGift.svg" alt="" style="width:52px;height:52px;top:10px;right:10px;transform:rotate(8deg);">
+            <div>
+              <span class="eyebrow">daily reward</span>
+              <div class="hero-title">Bag of <span class="hl">Loot!</span></div>
+              <p class="hero-sub">Your free daily gift — open it before midnight.</p>
+            </div>
+            <button class="hero-cta">Open Gift</button>
+          </div>
+
+          <!-- Inventory — tall, hidden on mobile (Items tab covers it) -->
+          <div class="hero hero--inv span-tall content-box-right" style="animation-delay:.1s;">
+            <div class="hero-glow"></div>
+            <div>
+              <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.15rem;position:relative;z-index:3;">
+                <div id="inventoryLottieAnimation" style="width:26px;height:26px;flex-shrink:0;"></div>
+                <span class="eyebrow" style="margin-bottom:0;">your items</span>
+              </div>
+              <div class="hero-title"><span class="hl">Inventory</span></div>
+              <p class="hero-sub">Collected prizes and gifts.</p>
+            </div>
+            <div class="inventory-grid"><!-- populated by JS --></div>
+            <button class="hero-cta card-btn">View All Items</button>
+          </div>
+
+          <!-- Void Spin -->
+          <div class="hero hero--void span-2 content-box-void" style="animation-delay:.15s;">
+            <div class="hero-glow"></div>
+            <div>
+              <span class="eyebrow">premium spin</span>
+              <div class="hero-title"><span class="hl">VOID</span> Spin</div>
+              <p class="hero-sub">Higher stakes — NFTs, Stars, and rare gifts up for grabs.</p>
+              <div class="spin-cost-badge"><img src="assets/TStars.svg" alt="">50 Stars</div>
+              <button class="hero-cta void-spin-cta">Spin Now</button>
+            </div>
+            <div class="void-asset-badge hero-asset">
+              <img src="assets/Rocket.svg" alt="">
+            </div>
+          </div>
+
+          <!-- Channel -->
+          <div class="hero hero--channel" style="animation-delay:.2s;">
+            <div class="hero-glow"></div>
+            <img class="hero-asset" src="https://raw.githubusercontent.com/IMAGE002/ProtV2/main/assets/Lolipop.svg" alt="" style="width:48px;height:48px;bottom:8px;right:10px;transform:rotate(-6deg);">
+            <div>
+              <span class="eyebrow">free drops every day</span>
+              <div class="hero-title"><span class="hl">FREE</span> Channel</div>
+              <p class="hero-sub">Join to never miss a giveaway or secret code.</p>
+            </div>
+            <a href="https://t.me/VoidGiftsOfficial" class="hero-cta" style="background:var(--signal);color:#052427;box-shadow:0 4px 14px rgba(69,214,224,.3);">
+              <img src="assets/SmallPLPIcon.svg" alt="">Join Channel
+            </a>
+          </div>
+
+          <!-- Promo / codes -->
+          <div class="hero hero--promo span-2 promo-card" style="animation-delay:.25s;">
+            <div class="hero-glow"></div>
+            <div>
+              <span class="eyebrow">exclusive rewards</span>
+              <div class="hero-title">Enter codes for <span class="hl">prizes!</span></div>
+              <p class="hero-sub">Find codes in our <a href="#">telegram</a> channel.</p>
+              <button class="hero-cta card-btn">Enter Code</button>
+            </div>
+            <div class="promo-assets">
+              <img class="hero-asset lg" src="https://raw.githubusercontent.com/IMAGE002/ProtV2/main/assets/Calender.svg" alt="" style="position:static;width:100%;height:100%;">
+              <img class="hero-asset sub" src="https://raw.githubusercontent.com/IMAGE002/ProtV2/main/assets/Diamond.svg" alt="">
+            </div>
+          </div>
+
+        </div><!-- /.home-grid -->
+
+        <!-- Utility tray -->
+        <div class="tray-label">▸ more</div>
+        <div class="tray content-box-bottom-2">
+          <div class="tile tile--contact card-btn">
+            <div class="tile-icon">
+              <img src="https://raw.githubusercontent.com/IMAGE002/ProtV2/main/assets/Cap.svg" alt="" style="width:60%;height:60%;object-fit:contain;" onerror="this.style.opacity=0">
+            </div>
+            <div class="tile-label">Contact Support</div>
+          </div>
+          <div class="tile tile--refer" onclick="TelegramGame.Navigation.navigateTo('settings')">
+            <div class="tile-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            </div>
+            <div class="tile-label">Settings &amp; Codes</div>
+          </div>
+        </div>
+
+      </div><!-- /#page-home -->
+
+      <!-- ============ LEADERBOARD ============ -->
+      <div class="page-content" id="page-leaderboard">
+        <div class="leaderboard-page">
+          <div class="leaderboard-header">
+            <span class="eyebrow">updates every 24 hours</span>
+            <h1 class="leaderboard-title" data-i18n="topPlayers">Leaderboard</h1>
+          </div>
+          <div class="leaderboard-tabs">
+            <button class="leaderboard-tab active" data-tab="coins">
+              <img src="assets/Coin.svg" alt="Coin"><span class="tab-label">Coins</span>
+            </button>
+            <button class="leaderboard-tab" data-tab="gifts">
+              <span class="gift-tab-icon" id="giftTabIcon"></span><span class="tab-label">Gifts</span>
+            </button>
+            <button class="leaderboard-tab" data-tab="stars">
+              <img src="assets/TStars.svg" alt="Stars"><span class="tab-label">Stars</span>
+            </button>
+          </div>
+          <div class="leaderboard-content">
+            <div class="leaderboard-list active" id="leaderboard-coins">
+              <div class="podium-container"></div>
+              <div class="ranks-list"></div>
+            </div>
+            <div class="leaderboard-list" id="leaderboard-gifts">
+              <div class="podium-container"></div>
+              <div class="ranks-list"></div>
+            </div>
+            <div class="leaderboard-list" id="leaderboard-stars">
+              <div class="podium-container"></div>
+              <div class="ranks-list"></div>
+            </div>
+          </div>
+          <div class="your-rank-card">
+            <div class="your-rank-label" data-i18n="yourRank">Your Rank</div>
+            <div class="your-rank-content">
+              <div class="your-rank-position">#<span id="yourRank">--</span></div>
+              <div class="your-rank-info">
+                <div class="your-rank-name" id="yourRankName">Loading...</div>
+                <div class="your-rank-score" id="yourRankScore">0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ DEPOSIT ============ -->
+      <div class="page-content" id="page-deposit">
+        <div class="deposit-page">
+          <div class="deposit-header">
+            <span class="eyebrow">telegram stars</span>
+            <h1 class="deposit-title">Deposit</h1>
+            <p class="deposit-subtitle">purchase coins with Telegram Stars</p>
+          </div>
+          <div class="deposit-tabs">
+            <button class="deposit-tab active" data-tab="stars">
+              <div class="tab-icon" id="starsTabIcon"></div><span class="tab-label">Telegram Stars</span>
+            </button>
+            <button class="deposit-tab" data-tab="ton">
+              <img src="assets/TON.svg" alt="TON" class="tab-icon-img"><span class="tab-label">TON Coin</span>
+            </button>
+          </div>
+          <div class="deposit-content">
+            <div class="deposit-list active" id="deposit-stars"><div class="packages-grid"></div></div>
+            <div class="deposit-list" id="deposit-ton"><div class="packages-grid"></div></div>
+            <div class="deposit-info-card">
+              <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+              </svg>
+              <div class="info-content">
+                <h3>Secure Payment</h3>
+                <p>All transactions are processed securely through Telegram. Coins are delivered instantly.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SETTINGS ============ -->
+      <div class="page-content" id="page-settings">
+        <div class="settings-page">
+          <div class="settings-header">
+            <h1 class="settings-title" data-i18n="settings">Settings</h1>
+            <p class="settings-subtitle" data-i18n="customizeExperience">Customize your experience</p>
+          </div>
+
+          <div class="settings-section promocode-section">
+            <div class="section-header">
+              <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="8" width="18" height="12" rx="2"/><path d="M7 8V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/><circle cx="12" cy="14" r="1"/>
+              </svg>
+              <h2 data-i18n="promocode">Promocode</h2>
+            </div>
+            <div class="promocode-input-wrapper">
+              <input type="text" id="promocodeInput" class="promocode-input" placeholder="Enter promocode..." maxlength="20">
+              <button class="promocode-submit-btn" id="promocodeSubmitBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+              </button>
+            </div>
+            <div class="promocode-status" id="promocodeStatus"></div>
+            <div class="promocode-info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              <span>Enter a valid promocode to receive rewards</span>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="section-header">
+              <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+              <h2 data-i18n="language">Language</h2>
+            </div>
+            <div class="setting-item clickable" id="languageSetting">
+              <div class="setting-info">
+                <div class="setting-label" data-i18n="appLanguage">App Language</div>
+                <div class="setting-description" data-i18n="chooseLanguage">Choose your preferred language</div>
+              </div>
+              <div class="setting-value">
+                <span id="currentLanguage">English</span>
+                <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="section-header">
+              <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              <h2 data-i18n="notifications">Notifications</h2>
+            </div>
+            <div class="setting-item"><div class="setting-info"><div class="setting-label">Push Notifications</div><div class="setting-description">Wins and updates</div></div>
+              <label class="toggle-switch"><input type="checkbox" id="pushNotifications" checked><span class="toggle-slider"></span></label></div>
+            <div class="setting-item"><div class="setting-info"><div class="setting-label">Sound Effects</div><div class="setting-description">Play sounds when spinning</div></div>
+              <label class="toggle-switch"><input type="checkbox" id="soundEffects" checked><span class="toggle-slider"></span></label></div>
+            <div class="setting-item"><div class="setting-info"><div class="setting-label">Prize Alerts</div><div class="setting-description">Notify on rare prizes</div></div>
+              <label class="toggle-switch"><input type="checkbox" id="prizeAlerts" checked><span class="toggle-slider"></span></label></div>
+          </div>
+
+          <div class="settings-section">
+            <div class="section-header">
+              <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+              </svg>
+              <h2 data-i18n="display">Display</h2>
+            </div>
+            <div class="setting-item"><div class="setting-info"><div class="setting-label">Animations</div><div class="setting-description">Smooth animations and effects</div></div>
+              <label class="toggle-switch"><input type="checkbox" id="animationsEnabled" checked><span class="toggle-slider"></span></label></div>
+            <div class="setting-item"><div class="setting-info"><div class="setting-label">Confetti Effects</div><div class="setting-description">Show confetti on wins</div></div>
+              <label class="toggle-switch"><input type="checkbox" id="confettiEffects" checked><span class="toggle-slider"></span></label></div>
+          </div>
+
+          <div class="settings-section">
+            <div class="section-header">
+              <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <h2 data-i18n="privacy">Privacy</h2>
+            </div>
+            <div class="setting-item"><div class="setting-info"><div class="setting-label">Show in Leaderboard</div><div class="setting-description">Public stats visibility</div></div>
+              <label class="toggle-switch"><input type="checkbox" id="showInLeaderboard" checked><span class="toggle-slider"></span></label></div>
+            <div class="setting-item"><div class="setting-info"><div class="setting-label">Share Statistics</div><div class="setting-description">Allow sharing stats with friends</div></div>
+              <label class="toggle-switch"><input type="checkbox" id="shareStats" checked><span class="toggle-slider"></span></label></div>
+          </div>
+
+          <div class="settings-section">
+            <div class="section-header">
+              <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              <h2>About</h2>
+            </div>
+            <div class="setting-item clickable" id="termsBtn">
+              <div class="setting-info"><div class="setting-label">Terms of Service</div><div class="setting-description">Read our terms and conditions</div></div>
+              <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+            <div class="setting-item clickable" id="privacyBtn">
+              <div class="setting-info"><div class="setting-label">Privacy Policy</div><div class="setting-description">How we handle your data</div></div>
+              <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info"><div class="setting-label">Version</div><div class="setting-description">App version information</div></div>
+              <div class="setting-value"><span class="version-number">v2.0.0</span></div>
+            </div>
+          </div>
+
+          <div class="settings-section danger-section">
+            <div class="section-header">
+              <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/>
+              </svg>
+              <h2 data-i18n="dangerZone">Danger Zone</h2>
+            </div>
+            <button class="danger-btn" id="resetDataBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              Reset All Data
+            </button>
+            <button class="danger-btn" id="clearCacheBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Clear Cache
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ DAILY SPIN ============ -->
+      <div class="page-content" id="page-dailyspin">
+        <div class="daily-spin-container">
+          <div class="spin-section">
+            <div class="wheel-container">
+              <div class="wheel-pointer"></div>
+              <div class="wheel" id="wheel">
+                <div class="cube"></div><div class="cube"></div><div class="cube"></div><div class="cube"></div><div class="cube"></div>
+                <div class="cube"></div><div class="cube"></div><div class="cube"></div><div class="cube"></div><div class="cube"></div>
+                <div class="cube"></div><div class="cube"></div><div class="cube"></div><div class="cube"></div><div class="cube"></div>
+                <div class="cube"></div><div class="cube"></div><div class="cube"></div><div class="cube"></div><div class="cube"></div>
+              </div>
+            </div>
+            <button class="spin-button" id="spinButton">SPIN!</button>
+          </div>
+
+          <div class="rewards-section">
+            <div class="rewards-header">
+              <div class="rewards-header-icon"><div class="rewards-icon-mask"></div></div>
+              <h2 class="rewards-title">What can I <span class="get-text">get?</span></h2>
+            </div>
+
+            <div class="gift-grid">
+              <div class="gift-item gift-legendary"><div class="gift-icon" id="giftCalendar"></div><div class="gift-label">Calender</div></div>
+              <div class="gift-item gift-epic"><div class="gift-icon" id="giftTrophy"></div><div class="gift-label">Trophy</div></div>
+              <div class="gift-item gift-rare"><div class="gift-icon" id="giftDiamond"></div><div class="gift-label">Diamond</div></div>
+              <div class="gift-item gift-rare"><div class="gift-icon" id="giftRing"></div><div class="gift-label">Ring</div></div>
+              <div class="gift-item gift-uncommon"><div class="gift-icon" id="giftRoseBouquet"></div><div class="gift-label">Rose Bouquet</div></div>
+              <div class="gift-item gift-uncommon"><div class="gift-icon" id="giftCake"></div><div class="gift-label">Cake</div></div>
+              <div class="gift-item gift-common"><div class="gift-icon" id="giftGift"></div><div class="gift-label">Gift Box</div></div>
+              <div class="gift-item gift-common"><div class="gift-icon" id="giftRose"></div><div class="gift-label">Rose</div></div>
+              <div class="gift-item gift-common"><div class="gift-icon" id="giftBear"></div><div class="gift-label">Bear</div></div>
+              <div class="gift-item gift-common"><div class="gift-icon" id="giftHeart"></div><div class="gift-label">Heart</div></div>
+            </div>
+
+            <div class="rewards-divider"><span>Coin Prizes</span></div>
+
+            <div class="reward-grid">
+              <div class="reward-item"><div class="reward-amount">500</div><div class="reward-icon" id="coin500"></div></div>
+              <div class="reward-item"><div class="reward-amount">250</div><div class="reward-icon" id="coin250"></div></div>
+              <div class="reward-item"><div class="reward-amount">100</div><div class="reward-icon" id="coin100"></div></div>
+              <div class="reward-item"><div class="reward-amount">50</div><div class="reward-icon" id="coin50"></div></div>
+              <div class="reward-item"><div class="reward-amount">25</div><div class="reward-icon" id="coin25"></div></div>
+              <div class="reward-item"><div class="reward-amount">10</div><div class="reward-icon" id="coin10"></div></div>
+              <div class="reward-item"><div class="reward-amount">5</div><div class="reward-icon" id="coin5"></div></div>
+              <div class="reward-item"><div class="reward-amount">1</div><div class="reward-icon" id="coin1"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ VOID SPIN ============ -->
+      <div class="page-content" id="page-voidspin">
+        <div class="daily-spin-container">
+          <div class="spin-section">
+            <div class="wheel-container void-wheel-container">
+              <div class="wheel-pointer"></div>
+              <div class="wheel" id="voidWheel">
+                <div class="cube void-cube"></div><div class="cube void-cube"></div><div class="cube void-cube"></div><div class="cube void-cube"></div><div class="cube void-cube"></div>
+                <div class="cube void-cube"></div><div class="cube void-cube"></div><div class="cube void-cube"></div><div class="cube void-cube"></div><div class="cube void-cube"></div>
+                <div class="cube void-cube"></div><div class="cube void-cube"></div><div class="cube void-cube"></div><div class="cube void-cube"></div><div class="cube void-cube"></div>
+                <div class="cube void-cube"></div><div class="cube void-cube"></div><div class="cube void-cube"></div><div class="cube void-cube"></div><div class="cube void-cube"></div>
+              </div>
+            </div>
+            <button class="spin-button void-spin-button" id="voidSpinButton">
+              <img src="assets/TStars.svg" alt="Stars" class="spin-btn-star-icon">
+              <span class="spin-btn-cost">50</span>
+              <span class="spin-btn-divider"></span>
+              SPIN!
+            </button>
+          </div>
+
+          <div class="rewards-section">
+            <div class="rewards-header">
+              <div class="rewards-header-icon"><div class="rewards-icon-mask"></div></div>
+              <h2 class="rewards-title">What can I <span class="get-text">get?</span></h2>
+            </div>
+
+            <div class="gift-grid">
+              <div class="gift-item gift-legendary"><div class="gift-icon" id="voidGiftNotepad"></div><div class="gift-label">Star Notepad</div></div>
+              <div class="gift-item gift-legendary"><div class="gift-icon" id="voidGiftRamen"></div><div class="gift-label">Instant Ramen</div></div>
+              <div class="gift-item gift-epic"><div class="gift-icon" id="voidGiftRocket"></div><div class="gift-label">Rocket</div></div>
+              <div class="gift-item gift-rare"><div class="gift-icon" id="voidGiftBear"></div><div class="gift-label">Bear</div></div>
+              <div class="gift-item gift-rare"><div class="gift-icon" id="voidGiftCake"></div><div class="gift-label">Cake</div></div>
+              <div class="gift-item gift-common"><div class="gift-icon" id="voidGiftHeart"></div><div class="gift-label">Heart</div></div>
+            </div>
+
+            <div class="rewards-divider"><span>Star Prizes</span></div>
+            <div class="reward-grid reward-grid--stars">
+              <div class="reward-item"><div class="reward-amount">25</div><div class="reward-icon" id="voidStars25"></div></div>
+              <div class="reward-item"><div class="reward-amount">10</div><div class="reward-icon" id="voidStars10"></div></div>
+              <div class="reward-item"><div class="reward-amount">5</div><div class="reward-icon" id="voidStars5"></div></div>
+            </div>
+
+            <div class="rewards-divider"><span>Coin Prizes</span></div>
+            <div class="reward-grid">
+              <div class="reward-item"><div class="reward-amount">150</div><div class="reward-icon" id="voidCoin150"></div></div>
+              <div class="reward-item"><div class="reward-amount">100</div><div class="reward-icon" id="voidCoin100"></div></div>
+              <div class="reward-item"><div class="reward-amount">50</div><div class="reward-icon" id="voidCoin50"></div></div>
+              <div class="reward-item"><div class="reward-amount">25</div><div class="reward-icon" id="voidCoin25"></div></div>
+              <div class="reward-item"><div class="reward-amount">15</div><div class="reward-icon" id="voidCoin15"></div></div>
+              <div class="reward-item"><div class="reward-amount">10</div><div class="reward-icon" id="voidCoin10"></div></div>
+              <div class="reward-item"><div class="reward-amount">5</div><div class="reward-icon" id="voidCoin5"></div></div>
+              <div class="reward-item"><div class="reward-amount">1</div><div class="reward-icon" id="voidCoin1"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.container -->
+
+    <!-- Win Modal (Daily) -->
+    <div class="win-modal-overlay" id="winModal">
+      <div class="win-modal">
+        <span class="win-modal-eyebrow">you won</span>
+        <div class="win-modal-prize-wrap"><div class="win-modal-icon" id="modalPrizeIcon"></div></div>
+        <div class="win-modal-prize-name" id="modalPrizeName">Prize</div>
+        <div class="win-modal-value-row" id="modalValueRow"></div>
+        <div class="win-modal-divider"></div>
+        <button class="claim-button" id="claimButton">Claim!</button>
+      </div>
+    </div>
+
+    <!-- Win Modal (Void) -->
+    <div class="win-modal-overlay" id="voidWinModal">
+      <div class="win-modal">
+        <span class="win-modal-eyebrow">you won</span>
+        <div class="win-modal-prize-wrap"><div class="win-modal-icon" id="voidModalPrizeIcon"></div></div>
+        <div class="win-modal-prize-name" id="voidModalPrizeName">Prize</div>
+        <div class="win-modal-value-row" id="voidModalValueRow"></div>
+        <div class="win-modal-divider"></div>
+        <button class="claim-button" id="voidClaimButton">Claim!</button>
+      </div>
+    </div>
+
+    <!-- Prize Modal -->
+    <div class="prize-modal-overlay" id="prizeModal">
+      <div class="prize-modal">
+        <div class="prize-modal-topbar">
+          <span class="prize-modal-eyebrow">your prize</span>
+          <button class="prize-modal-close" id="prizeModalClose">×</button>
+        </div>
+        <div class="prize-modal-hero">
+          <div class="prize-modal-icon" id="prizeModalIcon"></div>
+          <div class="prize-modal-name" id="prizeModalName">Prize Name</div>
+        </div>
+        <div class="prize-modal-info">
+          <div class="prize-modal-id" id="prizeModalId">ID: 0000-00-XXX</div>
+          <div class="prize-modal-coin-value" id="prizeModalCoinValue">
+            <img src="assets/Coin.svg" alt="Coins"><span>100 Coins</span>
+          </div>
+        </div>
+        <div class="prize-modal-hr"></div>
+        <div class="prize-modal-buttons">
+          <button class="prize-modal-btn convert-btn" id="convertBtn">
+            <img src="assets/Coin.svg" alt="Coins">Convert to Coins
+          </button>
+          <button class="prize-modal-btn claim-prize-btn" id="claimPrizeBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Claim Prize
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Language Modal -->
+    <div class="language-modal-overlay" id="languageModal">
+      <div class="language-modal">
+        <div class="language-modal-header">
+          <h2>Select Language</h2>
+          <button class="language-modal-close" id="languageModalClose">×</button>
+        </div>
+        <div class="language-list">
+          <div class="language-option active" data-lang="en"><span class="language-flag">🇺🇸</span><span class="language-name">English</span><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="language-option" data-lang="ru"><span class="language-flag">🇷🇺</span><span class="language-name">Русский</span><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="language-option" data-lang="es"><span class="language-flag">🇪🇸</span><span class="language-name">Español</span><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="language-option" data-lang="fr"><span class="language-flag">🇫🇷</span><span class="language-name">Français</span><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="language-option" data-lang="de"><span class="language-flag">🇩🇪</span><span class="language-name">Deutsch</span><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="language-option" data-lang="zh"><span class="language-flag">🇨🇳</span><span class="language-name">中文</span><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full Inventory Modal -->
+    <div class="full-inventory-modal-overlay" id="fullInventoryModal">
+      <div class="full-inventory-modal">
+        <div class="full-inventory-header">
+          <div class="full-inventory-title-section">
+            <div class="full-inventory-icon" id="fullInventoryLottieIcon"></div>
+            <h2 class="full-inventory-title">Your Complete Inventory</h2>
+          </div>
+          <button class="full-inventory-close" id="fullInventoryClose">×</button>
+        </div>
+        <div class="inventory-stats">
+          <div class="stat-card"><div class="stat-icon">🎁</div><div class="stat-content"><div class="stat-value" id="totalGiftsCount">0</div><div class="stat-label">Total Gifts</div></div></div>
+          <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-content"><div class="stat-value" id="totalGiftValue">0</div><div class="stat-label">Total Value</div></div></div>
+          <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-content"><div class="stat-value" id="rareGiftsCount">0</div><div class="stat-label">Rare Gifts</div></div></div>
+        </div>
+        <div class="inventory-filters">
+          <button class="filter-btn active" data-filter="all">All Gifts</button>
+          <button class="filter-btn" data-filter="telegram">Telegram Gifts</button>
+          <button class="filter-btn" data-filter="nft">NFTs</button>
+          <button class="filter-btn" data-filter="rare">Rare Only</button>
+        </div>
+        <div class="full-inventory-grid" id="fullInventoryGrid"></div>
+        <div class="empty-inventory" id="emptyInventory" style="display:none;">
+          <div class="empty-icon">📦</div>
+          <h3>No Gifts Yet</h3>
+          <p>Win your first gift by spinning the wheel!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom nav (mobile / mini-app) -->
+    <nav class="bottom-nav" id="bottomNav">
+      <button class="bottom-nav-item" data-page="leaderboard" type="button">
+        <svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 6h2a2 2 0 0 1 2 2 3 3 0 0 1-3 3M7 6H5a2 2 0 0 0-2 2 3 3 0 0 0 3 3"/></svg>
+        <span class="bn-label" data-i18n="leaderboard">Ranks</span>
+      </button>
+      <button class="bottom-nav-item" data-action="inventory" type="button">
+        <svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+        <span class="bn-label" data-i18n="inventory">Items</span>
+      </button>
+      <button class="bottom-nav-item bn-home active" data-page="home" type="button">
+        <span class="bn-icon-wrap"><svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span>
+        <span class="bn-label" data-i18n="home">Home</span>
+      </button>
+      <button class="bottom-nav-item" data-page="deposit" type="button">
+        <svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="17" cy="15" r="1.4" fill="currentColor" stroke="none"/></svg>
+        <span class="bn-label" data-i18n="deposit">Deposit</span>
+      </button>
+      <button class="bottom-nav-item" data-page="settings" type="button">
+        <svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        <span class="bn-label" data-i18n="settings">Settings</span>
+      </button>
+    </nav>
+
+  </div><!-- /.main-content -->
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>
