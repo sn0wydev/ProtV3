@@ -1,0 +1,111 @@
+<svg width="400" height="400" viewBox="0 0 400 400"
+     xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Hexagon coin base -->
+  <path d="
+    M 200 20
+    L 360 110
+    L 360 290
+    L 200 380
+    L 40 290
+    L 40 110 Z"
+    fill="url(#voidMetal)"/>
+
+  <!-- Inner rim -->
+  <path d="
+    M 200 45
+    L 330 120
+    L 330 280
+    L 200 355
+    L 70 280
+    L 70 120 Z"
+    fill="none"
+    stroke="url(#rimGradient)"
+    stroke-width="10"
+    opacity="0.9"/>
+
+  <!-- Circuit / dashed inner line (perfect as before) -->
+  <path d="
+    M 200 85
+    L 295 140
+    L 295 260
+    L 200 315
+    L 105 260
+    L 105 140 Z"
+    fill="none"
+    stroke="#2E335F"
+    stroke-width="2"
+    stroke-dasharray="8 6"
+    opacity="0.4"/>
+
+  <!-- Inner core -->
+  <path d="
+    M 200 95
+    L 285 150
+    L 285 250
+    L 200 305
+    L 115 250
+    L 115 150 Z"
+    fill="url(#voidCore)"/>
+
+  <!-- Green gain triangle (bigger, behind V) -->
+  <path d="M 140 140 L 260 140 L 200 270 Z"
+        fill="#00FF7A"
+        fill-opacity="0.15"
+        stroke="#00FF7A"
+        stroke-width="1.5"
+        stroke-opacity="0.5"/>
+
+  <!-- Red loss triangle (bigger, behind V, dashed) -->
+  <path d="M 140 260 L 260 260 L 200 140 Z"
+        fill="none"
+        stroke="#FF3B3B"
+        stroke-width="2"
+        stroke-dasharray="6 4"
+        stroke-linejoin="round"
+        stroke-opacity="0.5"/>
+
+  <!-- Central V (bold, icon-readable) -->
+  <path d="
+    M 150 145
+    L 200 265
+    L 250 145
+    L 225 145
+    L 200 215
+    L 175 145 Z"
+    fill="#00FF7A"/>
+
+  <!-- V outline for contrast -->
+  <path d="
+    M 150 145
+    L 200 265
+    L 250 145"
+    fill="none"
+    stroke="#0A0C18"
+    stroke-width="6"
+    stroke-linejoin="round"
+    opacity="0.6"/>
+
+  <defs>
+    <!-- Void metal gradient -->
+    <radialGradient id="voidMetal">
+      <stop offset="0%" stop-color="#1B1F3D"/>
+      <stop offset="70%" stop-color="#0F1224"/>
+      <stop offset="100%" stop-color="#060810"/>
+    </radialGradient>
+
+    <!-- Void core -->
+    <radialGradient id="voidCore">
+      <stop offset="0%" stop-color="#000000"/>
+      <stop offset="65%" stop-color="#0A0C18"/>
+      <stop offset="100%" stop-color="#1A1E38"/>
+    </radialGradient>
+
+    <!-- Rim gradient -->
+    <linearGradient id="rimGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3A4070"/>
+      <stop offset="50%" stop-color="#5B9FFF"/>
+      <stop offset="100%" stop-color="#3A4070"/>
+    </linearGradient>
+  </defs>
+</svg>
