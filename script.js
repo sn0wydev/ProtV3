@@ -446,7 +446,7 @@ const Utils = {
 // ============================================
 
 const STATUS_CONFIG = {
-  URL: 'https://raw.githubusercontent.com/IMAGE002/Build1/main/status.json',
+  URL: 'https://raw.githubusercontent.com/sn0wydev/ProtV3/main/status.json',
   TIMEOUT_MS: 4000
 };
 
