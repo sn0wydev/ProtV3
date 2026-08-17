@@ -477,15 +477,8 @@ const StatusCheck = {
 
 const BackendAPI = {
   isCloudStorageAvailable() {
-  if (!STATE.tg?.CloudStorage?.getItem) return false;
-  if (typeof STATE.tg.isVersionAtLeast === 'function') {
-    return STATE.tg.isVersionAtLeast('6.9');
-  }
-  const v = STATE.tg.version;
-  if (!v) return false;
-  const [maj, min] = v.split('.').map(Number);
-  return maj > 6 || (maj === 6 && min >= 9);
-},
+    return !!(STATE.tg?.CloudStorage?.getItem);
+  },
 
   // ── Generic helpers ──
 
@@ -2438,11 +2431,24 @@ async function initializeApp() {
   BackendAPI.syncBalance().then(() => Currency.update());
   Inventory.updateDisplay();
 
-  window.addEventListener('load', () => {
+  startWheels();
+}
+
+// Отдельная функция вместо голого addEventListener('load', ...) —
+// проверяет, не наступила ли загрузка страницы УЖЕ (пока мы ждали
+// ответ от StatusCheck), и в этом случае запускает колёса сразу,
+// вместо того чтобы вечно ждать событие, которое уже никогда не придёт.
+function startWheels() {
+  const run = () => {
     SpinWheel.init();
     VoidSpinWheel.init();
     LottieAnimations.init();
-  });
+  };
+  if (document.readyState === 'complete') {
+    run();
+  } else {
+    window.addEventListener('load', run, { once: true });
+  }
 }
 
 // Global API for external use
