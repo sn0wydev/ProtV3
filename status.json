@@ -1,5 +1,4 @@
 {
-  "status": "maintenance"
+  "status": "maintenance",
+  "_note": "valid values: production | maintenance"
 }
-
- // "status": maintenance production
