@@ -438,6 +438,40 @@ const Utils = {
 };
 
 // ============================================
+// STATUS CHECK — remote app status (production /
+// maintenance). Fail-open: if the check itself
+// fails for any reason (network down, bad JSON,
+// slow response), we treat it as production so a
+// broken status endpoint never blocks a working app.
+// ============================================
+
+const STATUS_CONFIG = {
+  URL: 'https://raw.githubusercontent.com/IMAGE002/Build1/main/status.json',
+  TIMEOUT_MS: 4000
+};
+
+const StatusCheck = {
+  async fetchStatus() {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), STATUS_CONFIG.TIMEOUT_MS);
+      const res = await fetch(`${STATUS_CONFIG.URL}?t=${Date.now()}`, {
+        signal: controller.signal,
+        cache: 'no-store'
+      });
+      clearTimeout(timer);
+      if (!res.ok) return { status: 'production' };
+      const data = await res.json();
+      const allowed = ['production', 'maintenance'];
+      if (!allowed.includes(data.status)) return { status: 'production' };
+      return data;
+    } catch {
+      return { status: 'production' };
+    }
+  }
+};
+
+// ============================================
 // BACKEND / CLOUD STORAGE
 // ============================================
 
@@ -603,21 +637,21 @@ const LoadingScreen = {
     window.addEventListener('orientationchange', Utils.setVH);
 
     if (typeof lottie !== 'undefined') {
-      this.initAnimation();
+      this.initAnimation('assets/dev_duck--@DMJ_Stickers.json');
       this.startLoading();
     } else {
       setTimeout(() => this.init(), 100);
     }
   },
 
-  initAnimation() {
+  initAnimation(path) {
     const el = document.getElementById('lottie-loading-container');
-    if (el) {
-      this.loadingAnimation = lottie.loadAnimation({
-        container: el, renderer: 'svg', loop: true, autoplay: true,
-        path: 'assets/dev_duck--@DMJ_Stickers.json'
-      });
-    }
+    if (!el) return;
+    if (this.loadingAnimation) { this.loadingAnimation.destroy(); this.loadingAnimation = null; }
+    el.innerHTML = '';
+    this.loadingAnimation = lottie.loadAnimation({
+      container: el, renderer: 'svg', loop: true, autoplay: true, path
+    });
   },
 
   startLoading() {
@@ -646,6 +680,39 @@ const LoadingScreen = {
         document.body.classList.remove('no-scroll');
       }, 50);
     }, 500);
+  },
+
+  // ── Maintenance mode ──
+  // Swaps the duck, hides the progress bar, rewrites the text — and
+  // deliberately never calls hide(). The rest of the app (Navigation,
+  // wheels, Telegram sync) is also never started for this status in
+  // initializeApp(), so there's nothing half-working underneath to
+  // accidentally reveal.
+  showMaintenance(message) {
+    document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+    Utils.setVH();
+    window.addEventListener('resize', Utils.setVH);
+    window.addEventListener('orientationchange', Utils.setVH);
+
+    const start = () => {
+      this.initAnimation('assets/DuckyThink.json');
+
+      const heading = document.getElementById('loadingStatusHeading');
+      if (heading) { heading.textContent = 'Тех Перерыв'; heading.style.display = 'block'; }
+
+      const barWrap = document.getElementById('loadingBarWrapper');
+      if (barWrap) barWrap.style.display = 'none';
+
+      const textEl = document.getElementById('loadingText');
+      if (textEl) {
+        textEl.innerHTML = message
+          ? message
+          : 'Исправляем и делаем лучше! Подробнее на: <a href="https://t.me/VoidGiftsOfficial" target="_blank" rel="noopener noreferrer">t.me/VoidGiftsOfficial</a>';
+      }
+    };
+
+    if (typeof lottie !== 'undefined') start();
+    else setTimeout(() => this.showMaintenance(message), 100);
   }
 };
 
@@ -2342,7 +2409,14 @@ function cleanupURLParams() {
 // BOOT
 // ============================================
 
-function initializeApp() {
+async function initializeApp() {
+  const { status, message } = await StatusCheck.fetchStatus();
+
+  if (status === 'maintenance') {
+    LoadingScreen.showMaintenance(message);
+    return; // ничего остальное не запускаем — приложение остаётся на этом экране
+  }
+
   checkForPaymentSuccess();
   TelegramApp.init();
   LoadingScreen.init();
