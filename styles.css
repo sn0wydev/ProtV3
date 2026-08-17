@@ -130,13 +130,13 @@ body.no-scroll{ position:fixed; overflow:hidden; width:100%; height:100%; }
   font-family:var(--font-display); font-weight:700; font-size:1.05rem; letter-spacing:-0.01em;
   display:flex; align-items:center; gap:8px; color:var(--ghost);
 }
-.brand .ring-icon {
-  width: 25px;   /* smaller size */
-  height: 25px;
-  flex-shrink: 0;
-  display: inline-block;
-  box-shadow: 0 0 8px rgba(124,92,250,.7); /* glow effect */
-  vertical-align: middle; /* keeps aligned with text */
+.brand .ring{
+  width:20px; height:20px; border-radius:50%; border:2px solid var(--rift);
+  box-shadow:0 0 10px rgba(124,92,250,.7); position:relative; flex-shrink:0;
+}
+.brand .ring::after{
+  content:''; position:absolute; inset:3px; border-radius:50%;
+  background:radial-gradient(circle, var(--static), transparent 70%); opacity:.85;
 }
 
 .readout{
@@ -263,6 +263,17 @@ body.no-scroll{ position:fixed; overflow:hidden; width:100%; height:100%; }
   content:'— all quiet, check back soon —';
   border:1px dashed var(--void-line-2); border-radius:100px; padding:.5rem 1rem; color:var(--fog-dim);
   font-size:.68rem; font-family:var(--font-mono); letter-spacing:.02em; white-space:nowrap;
+}
+
+.live-gifts-row{ display:flex; flex-direction:column; gap:.4rem; margin-bottom:1rem; }
+.live-gifts-label{
+  font-family:var(--font-mono);
+  font-size:.62rem;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--fog-dim);
+  padding-left:.25rem;
 }
 
 /* ============================================
@@ -599,6 +610,26 @@ body.no-scroll{ position:fixed; overflow:hidden; width:100%; height:100%; }
 .spin-btn-star-icon{ width:18px; height:18px; object-fit:contain; flex-shrink:0; }
 .spin-btn-cost{ font-weight:800; }
 .spin-btn-divider{ width:1px; height:16px; background:rgba(255,255,255,.35); flex-shrink:0; }
+
+.spin-back-btn{
+  align-self:flex-start;
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--void-line-2);
+  border-radius:100px;
+  padding:.5rem 1rem;
+  margin-bottom:1.2rem;
+  color:var(--fog);
+  font-size:.8rem;
+  font-weight:600;
+  font-family:var(--font-body);
+  cursor:pointer;
+  transition:all .2s ease;
+}
+.spin-back-btn svg{ width:16px; height:16px; flex-shrink:0; }
+.spin-back-btn:hover{ background:rgba(255,255,255,0.08); border-color:rgba(124,92,250,.4); color:var(--ghost); }
 
 @keyframes shakeX{ 0%,100%{transform:translateX(0);} 20%{transform:translateX(-6px);} 40%{transform:translateX(6px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(4px);} }
 .shake-error{ animation:shakeX .4s ease; }
