@@ -103,8 +103,13 @@
       <!-- ============ HOME ============ -->
       <div class="page-content active" id="page-home">
 
-        <div class="echo-strip-wrap" id="notificationContainer">
-          <!-- notification cubes injected by JS -->
+        <div class="live-gifts-row">
+          <span class="live-gifts-label">▸ live gifts</span>
+          <div class="echo-strip-wrap" id="echoWrapper">
+            <div class="card-base content-box-top" id="notificationContainer">
+              <!-- Notification cubes injected by JS -->
+            </div>
+          </div>
         </div>
 
         <div class="home-grid">
@@ -410,6 +415,12 @@
       <!-- ============ DAILY SPIN ============ -->
       <div class="page-content" id="page-dailyspin">
         <div class="daily-spin-container">
+          <button class="spin-back-btn" onclick="TelegramGame.Navigation.navigateTo('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Домой
+          </button>
           <div class="spin-section">
             <div class="wheel-container">
               <div class="wheel-pointer"></div>
@@ -461,6 +472,12 @@
       <!-- ============ VOID SPIN ============ -->
       <div class="page-content" id="page-voidspin">
         <div class="daily-spin-container">
+          <button class="spin-back-btn" onclick="TelegramGame.Navigation.navigateTo('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Домой
+          </button>
           <div class="spin-section">
             <div class="wheel-container void-wheel-container">
               <div class="wheel-pointer"></div>
