@@ -130,13 +130,14 @@ body.no-scroll{ position:fixed; overflow:hidden; width:100%; height:100%; }
   font-family:var(--font-display); font-weight:700; font-size:1.05rem; letter-spacing:-0.01em;
   display:flex; align-items:center; gap:8px; color:var(--ghost);
 }
-.brand .ring{
-  width:20px; height:20px; border-radius:50%; border:2px solid var(--rift);
-  box-shadow:0 0 10px rgba(124,92,250,.7); position:relative; flex-shrink:0;
-}
-.brand .ring::after{
-  content:''; position:absolute; inset:3px; border-radius:50%;
-  background:radial-gradient(circle, var(--static), transparent 70%); opacity:.85;
+
+.brand .ring-icon {
+  width: 14px;   /* smaller size */
+  height: 14px;
+  flex-shrink: 0;
+  display: inline-block;
+  box-shadow: 0 0 8px rgba(124,92,250,.7); /* glow effect */
+  vertical-align: middle; /* keeps aligned with text */
 }
 
 .readout{
