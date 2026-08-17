@@ -89,6 +89,26 @@ body.no-scroll{ position:fixed; overflow:hidden; width:100%; height:100%; }
 .main-content{ opacity:0; transition:opacity .5s ease; }
 .main-content.visible{ opacity:1; }
 
+.loading-status-heading{
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ember);
+  text-align: center;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 20px rgba(240,168,96,0.4);
+}
+
+.loading-text a{
+  color: var(--signal);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 600;
+}
+.loading-text a:hover{ color: var(--signal-2); }
+
 /* ============================================
    BACKGROUND PATTERN
    ============================================ */
