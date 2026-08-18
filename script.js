@@ -180,11 +180,11 @@ const VOID_PREVIEW_PRIZES = [
 ];
 
 const VALID_PROMOCODES = {
-  'WELCOME100': { coins: 100, message: 'Welcome bonus claimed!' },
-  'LUCKY777':   { coins: 777, message: 'Lucky bonus activated!' },
-  'FREECOINS':  { coins: 50,  message: 'Free coins added!' },
-  'VOIDGIFT':   { coins: 200, message: 'Special gift redeemed!' },
-  'SPIN2WIN':   { coins: 150, message: 'Spin bonus unlocked!' }
+  'WELCOME100': { coins: 100, messageKey: 'promoWelcome' },
+  'LUCKY777':   { coins: 777, messageKey: 'promoLucky' },
+  'FREECOINS':  { coins: 50,  messageKey: 'promoFree' },
+  'VOIDGIFT':   { coins: 200, messageKey: 'promoVoidGift' },
+  'SPIN2WIN':   { coins: 150, messageKey: 'promoSpin2Win' }
 };
 
 const TELEGRAM_GIFT_IDS = {
@@ -295,14 +295,12 @@ const STATE = {
     ]
   },
   settings: {
-    language: 'en',
-    pushNotifications: true,
-    soundEffects: true,
-    prizeAlerts: true,
-    animationsEnabled: true,
-    confettiEffects: true,
-    showInLeaderboard: true,
-    shareStats: true
+  language: 'en',
+  soundEffects: true,
+  prizeAlerts: true,
+  animationsEnabled: true,
+  showInLeaderboard: true,
+  shareStats: true
   },
   currentDepositTab: 'stars',
   currentModalPrize: null,
@@ -320,6 +318,10 @@ const STATE = {
 
 const TRANSLATIONS = {
   en: {
+    home: 'Home',
+    leaderboard: 'Leaderboard',
+    inventory: 'Items',
+    deposit: 'Deposit',
     settings: 'Settings',
     customizeExperience: 'Customize your experience',
     promocode: 'Promocode',
@@ -329,41 +331,981 @@ const TRANSLATIONS = {
     notifications: 'Notifications',
     display: 'Display',
     privacy: 'Privacy',
-    home: 'Home',
-    leaderboard: 'Leaderboard',
-    deposit: 'Deposit',
-    dailyGift: 'Daily',
-    bagOfLoot: 'Bag of Loot!',
-    dailyGiftSubtitle: 'Daily gift from us!',
-    inventory: 'Inventory',
-    yourCollectedItems: 'Your collected items',
+    dangerZone: 'Danger Zone',
+    topPlayers: 'Leaderboard',
+
+    copyright: '© 2025 Copyright All Rights Reserved',
+    liveGifts: '▸ live gifts',
+    more: '▸ more',
+
+    dailyRewardEyebrow: 'daily reward',
+    bagOfLoot: 'Bag of',
+    lootHighlight: 'Loot!',
+    dailyRewardSub: 'Your free daily gift — open it before midnight.',
+    openGift: 'Open Gift',
+
+    yourItemsEyebrow: 'your items',
+    inventoryHighlight: 'Inventory',
+    inventorySub: 'Collected prizes and gifts.',
     viewAllItems: 'View All Items',
-    contact: 'Contact',
-    topPlayers: 'Top Players',
-    coins: 'Coins',
-    gifts: 'Gifts',
+
+    premiumSpinEyebrow: 'premium spin',
+    voidSpinTitle: 'VOID',
+    voidSpinTitleSuffix: 'Spin',
+    voidSpinSub: 'Higher stakes — NFTs, Stars, and rare gifts up for grabs.',
+    starsWord: 'Stars',
+    spinNow: 'Spin Now',
+
+    freeDropsEyebrow: 'free drops every day',
+    freeHighlight: 'FREE',
+    channelSuffix: 'Channel',
+    channelSub: 'Join to never miss a giveaway or secret code.',
+    joinChannel: 'Join Channel',
+
+    exclusiveRewardsEyebrow: 'exclusive rewards',
+    enterCodesFor: 'Enter codes for',
+    prizesHighlight: 'prizes!',
+    findCodes: 'Find codes in our',
+    telegramWord: 'telegram',
+    channelWord: 'channel.',
+    enterCode: 'Enter Code',
+
+    contactSupport: 'Contact Support',
+    settingsAndCodes: 'Settings & Codes',
+
+    updatesEvery24h: 'updates every 24 hours',
+    tabCoins: 'Coins',
+    tabGifts: 'Gifts',
+    tabStars: 'Stars',
     yourRank: 'Your Rank',
-    dangerZone: 'Danger Zone'
+
+    depositEyebrow: 'telegram stars',
+    depositTitle: 'Deposit',
+    depositSubtitle: 'purchase coins with Telegram Stars',
+    tabTelegramStars: 'Telegram Stars',
+    tabTonCoin: 'TON Coin',
+    securePayment: 'Secure Payment',
+    securePaymentDesc: 'All transactions are processed securely through Telegram. Coins are delivered instantly.',
+    purchase: 'Purchase',
+    popular: 'Popular',
+
+    promocodePlaceholder: 'Enter promocode...',
+    promocodeInfo: 'Enter a valid promocode to receive rewards',
+
+    soundEffects: 'Sound Effects',
+    soundEffectsDesc: 'Play sounds when spinning',
+    prizeAlerts: 'Prize Alerts',
+    prizeAlertsDesc: 'Notify on rare prizes',
+    animations: 'Animations',
+    animationsDesc: 'Smooth animations and effects',
+    showInLeaderboard: 'Show in Leaderboard',
+    showInLeaderboardDesc: 'Public stats visibility',
+    shareStatistics: 'Share Statistics',
+    shareStatisticsDesc: 'Allow sharing stats with friends',
+
+    about: 'About',
+    termsOfService: 'Terms of Service',
+    termsOfServiceDesc: 'Read our terms and conditions',
+    privacyPolicy: 'Privacy Policy',
+    privacyPolicyDesc: 'How we handle your data',
+    version: 'Version',
+    versionDesc: 'App version information',
+
+    resetAllData: 'Reset All Data',
+    clearCache: 'Clear Cache',
+
+    backToHome: 'Home',
+    whatCanIGet: 'What can I',
+    getWord: 'get?',
+    spinButton: 'SPIN!',
+    coinPrizes: 'Coin Prizes',
+    starPrizes: 'Star Prizes',
+
+    youWon: 'you won',
+    claim: 'Claim!',
+
+    yourPrize: 'your prize',
+    convertToCoins: 'Convert to Coins',
+    claimPrize: 'Claim Prize',
+    coinsWord: 'Coins',
+    coinsValue: 'Coins value',
+    starsAddedToBalance: 'Stars added to balance',
+
+    selectLanguage: 'Select Language',
+
+    yourCompleteInventory: 'Your Complete Inventory',
+    totalGifts: 'Total Gifts',
+    totalValue: 'Total Value',
+    rareGifts: 'Rare Gifts',
+    filterAll: 'All Gifts',
+    filterTelegram: 'Telegram Gifts',
+    filterNft: 'NFTs',
+    filterRare: 'Rare Only',
+    noGiftsYet: 'No Gifts Yet',
+    noGiftsYetDesc: 'Win your first gift by spinning the wheel!',
+
+    settingSaved: 'Setting saved',
+    languageChanged: 'Language changed',
+    paymentSuccessAdding: 'Payment successful! Adding {n} stars…',
+    starsAdded: '{n} stars added!',
+    notEnoughStars: 'Not enough Stars — need {n} ⭐',
+    creatingInvoice: 'Creating invoice…',
+    paymentCancelled: 'Payment cancelled',
+    paymentFailed: 'Payment failed. Please try again.',
+    claimingGift: 'Claiming your gift…',
+    giftSentToTelegram: '{name} sent to your Telegram!',
+    failedToClaim: 'Failed to claim: {msg}',
+    noPrizeSelected: 'No prize selected',
+    telegramUnavailable: 'Telegram unavailable',
+    giftMappingError: 'Gift mapping error: {name}',
+    cacheCleared: 'Cache cleared',
+    telegramWebAppUnavailable: 'Telegram WebApp not available',
+    userIdUnavailable: 'User ID not available',
+    invoiceError: 'Error: {msg}',
+    giftSentPopupTitle: 'Gift Sent!',
+    giftSentPopupMessage: 'Your {name} gift has been sent to your Telegram account!',
+    claimFailedPopupTitle: 'Claim Failed',
+
+    promoEnterCode: 'Please enter a promocode',
+    promoAlreadyRedeemed: 'Code already redeemed',
+    promoInvalid: 'Invalid promocode',
+    promoRedeemed: '✓ {message} +{coins} coins!',
+    promoWelcome: 'Welcome bonus claimed!',
+    promoLucky: 'Lucky bonus activated!',
+    promoFree: 'Free coins added!',
+    promoVoidGift: 'Special gift redeemed!',
+    promoSpin2Win: 'Spin bonus unlocked!',
+
+    confirmResetData: '⚠️ Delete ALL data? This cannot be undone.',
+    confirmResetType: 'Type "RESET" to confirm:',
+    resetCancelled: 'Reset cancelled.',
+    allDataReset: 'All data reset!\nReloading…',
+    confirmClearCache: 'Clear cache?\n\nYour data will not be affected.'
   },
   ru: {
+    home: 'Главная',
+    leaderboard: 'Лидеры',
+    inventory: 'Вещи',
+    deposit: 'Депозит',
     settings: 'Настройки',
     customizeExperience: 'Настройте свой опыт',
-    home: 'Главная',
-    leaderboard: 'Таблица лидеров',
-    deposit: 'Депозит',
-    coins: 'Монеты',
-    gifts: 'Подарки',
-    dangerZone: 'Опасная зона'
+    promocode: 'Промокод',
+    language: 'Язык',
+    appLanguage: 'Язык приложения',
+    chooseLanguage: 'Выберите предпочитаемый язык',
+    notifications: 'Уведомления',
+    display: 'Экран',
+    privacy: 'Приватность',
+    dangerZone: 'Опасная зона',
+    topPlayers: 'Лидеры',
+
+    copyright: '© 2025 Все права защищены',
+    liveGifts: '▸ подарки в реальном времени',
+    more: '▸ ещё',
+
+    dailyRewardEyebrow: 'ежедневная награда',
+    bagOfLoot: 'Мешок',
+    lootHighlight: 'добычи!',
+    dailyRewardSub: 'Ваш бесплатный ежедневный подарок — заберите до полуночи.',
+    openGift: 'Открыть подарок',
+
+    yourItemsEyebrow: 'ваши предметы',
+    inventoryHighlight: 'Инвентарь',
+    inventorySub: 'Полученные призы и подарки.',
+    viewAllItems: 'Все предметы',
+
+    premiumSpinEyebrow: 'премиум-спин',
+    voidSpinTitle: 'VOID',
+    voidSpinTitleSuffix: 'Spin',
+    voidSpinSub: 'Выше ставки — NFT, звёзды и редкие подарки.',
+    starsWord: 'Звёзд',
+    spinNow: 'Крутить',
+
+    freeDropsEyebrow: 'бесплатные дропы каждый день',
+    freeHighlight: 'FREE',
+    channelSuffix: 'Канал',
+    channelSub: 'Подпишитесь, чтобы не пропустить розыгрыш или секретный код.',
+    joinChannel: 'Подписаться',
+
+    exclusiveRewardsEyebrow: 'эксклюзивные награды',
+    enterCodesFor: 'Введите коды на',
+    prizesHighlight: 'призы!',
+    findCodes: 'Ищите коды в нашем',
+    telegramWord: 'телеграм',
+    channelWord: 'канале.',
+    enterCode: 'Ввести код',
+
+    contactSupport: 'Связаться с поддержкой',
+    settingsAndCodes: 'Настройки и коды',
+
+    updatesEvery24h: 'обновляется каждые 24 часа',
+    tabCoins: 'Монеты',
+    tabGifts: 'Подарки',
+    tabStars: 'Звёзды',
+    yourRank: 'Ваш ранг',
+
+    depositEyebrow: 'telegram stars',
+    depositTitle: 'Депозит',
+    depositSubtitle: 'покупайте монеты за Telegram Stars',
+    tabTelegramStars: 'Telegram Stars',
+    tabTonCoin: 'TON Coin',
+    securePayment: 'Безопасная оплата',
+    securePaymentDesc: 'Все транзакции обрабатываются безопасно через Telegram. Монеты зачисляются мгновенно.',
+    purchase: 'Купить',
+    popular: 'Популярно',
+
+    promocodePlaceholder: 'Введите промокод...',
+    promocodeInfo: 'Введите действующий промокод, чтобы получить награду',
+
+    soundEffects: 'Звуковые эффекты',
+    soundEffectsDesc: 'Воспроизводить звуки при вращении',
+    prizeAlerts: 'Уведомления о призах',
+    prizeAlertsDesc: 'Уведомлять о редких призах',
+    animations: 'Анимации',
+    animationsDesc: 'Плавные анимации и эффекты',
+    showInLeaderboard: 'Показывать в рейтинге',
+    showInLeaderboardDesc: 'Видимость публичной статистики',
+    shareStatistics: 'Делиться статистикой',
+    shareStatisticsDesc: 'Разрешить делиться статистикой с друзьями',
+
+    about: 'О приложении',
+    termsOfService: 'Условия использования',
+    termsOfServiceDesc: 'Прочитайте наши условия',
+    privacyPolicy: 'Политика конфиденциальности',
+    privacyPolicyDesc: 'Как мы обрабатываем ваши данные',
+    version: 'Версия',
+    versionDesc: 'Информация о версии приложения',
+
+    resetAllData: 'Сбросить все данные',
+    clearCache: 'Очистить кэш',
+
+    backToHome: 'Домой',
+    whatCanIGet: 'Что можно',
+    getWord: 'получить?',
+    spinButton: 'КРУТИТЬ!',
+    coinPrizes: 'Призовые монеты',
+    starPrizes: 'Призовые звёзды',
+
+    youWon: 'вы выиграли',
+    claim: 'Забрать!',
+
+    yourPrize: 'ваш приз',
+    convertToCoins: 'Обменять на монеты',
+    claimPrize: 'Забрать приз',
+    coinsWord: 'Монет',
+    coinsValue: 'монет стоимостью',
+    starsAddedToBalance: 'звёзд зачислено на баланс',
+
+    selectLanguage: 'Выберите язык',
+
+    yourCompleteInventory: 'Ваш полный инвентарь',
+    totalGifts: 'Всего подарков',
+    totalValue: 'Общая стоимость',
+    rareGifts: 'Редкие подарки',
+    filterAll: 'Все подарки',
+    filterTelegram: 'Подарки Telegram',
+    filterNft: 'NFT',
+    filterRare: 'Только редкие',
+    noGiftsYet: 'Пока нет подарков',
+    noGiftsYetDesc: 'Выиграйте первый подарок, крутанув колесо!',
+
+    settingSaved: 'Настройка сохранена',
+    languageChanged: 'Язык изменён',
+    paymentSuccessAdding: 'Оплата прошла успешно! Начисляем {n} звёзд…',
+    starsAdded: 'Начислено {n} звёзд!',
+    notEnoughStars: 'Недостаточно звёзд — нужно {n} ⭐',
+    creatingInvoice: 'Создаём счёт…',
+    paymentCancelled: 'Оплата отменена',
+    paymentFailed: 'Оплата не удалась. Попробуйте снова.',
+    claimingGift: 'Забираем ваш подарок…',
+    giftSentToTelegram: '{name} отправлен в ваш Telegram!',
+    failedToClaim: 'Не удалось забрать: {msg}',
+    noPrizeSelected: 'Приз не выбран',
+    telegramUnavailable: 'Telegram недоступен',
+    giftMappingError: 'Ошибка сопоставления подарка: {name}',
+    cacheCleared: 'Кэш очищен',
+    telegramWebAppUnavailable: 'Telegram WebApp недоступен',
+    userIdUnavailable: 'ID пользователя недоступен',
+    invoiceError: 'Ошибка: {msg}',
+    giftSentPopupTitle: 'Подарок отправлен!',
+    giftSentPopupMessage: 'Ваш подарок «{name}» отправлен в ваш аккаунт Telegram!',
+    claimFailedPopupTitle: 'Не удалось забрать',
+
+    promoEnterCode: 'Пожалуйста, введите промокод',
+    promoAlreadyRedeemed: 'Код уже использован',
+    promoInvalid: 'Неверный промокод',
+    promoRedeemed: '✓ {message} +{coins} монет!',
+    promoWelcome: 'Приветственный бонус получен!',
+    promoLucky: 'Счастливый бонус активирован!',
+    promoFree: 'Бесплатные монеты начислены!',
+    promoVoidGift: 'Особый подарок получен!',
+    promoSpin2Win: 'Бонус спина разблокирован!',
+
+    confirmResetData: '⚠️ Удалить ВСЕ данные? Это действие необратимо.',
+    confirmResetType: 'Введите "RESET" для подтверждения:',
+    resetCancelled: 'Сброс отменён.',
+    allDataReset: 'Все данные сброшены!\nПерезагрузка…',
+    confirmClearCache: 'Очистить кэш?\n\nВаши данные не будут затронуты.'
   },
   es: {
-    settings: 'Configuración',
-    customizeExperience: 'Personaliza tu experiencia',
     home: 'Inicio',
     leaderboard: 'Clasificación',
+    inventory: 'Objetos',
     deposit: 'Depósito',
-    coins: 'Monedas',
-    gifts: 'Regalos',
-    dangerZone: 'Zona de peligro'
+    settings: 'Configuración',
+    customizeExperience: 'Personaliza tu experiencia',
+    promocode: 'Código promocional',
+    language: 'Idioma',
+    appLanguage: 'Idioma de la app',
+    chooseLanguage: 'Elige tu idioma preferido',
+    notifications: 'Notificaciones',
+    display: 'Pantalla',
+    privacy: 'Privacidad',
+    dangerZone: 'Zona de peligro',
+    topPlayers: 'Clasificación',
+
+    copyright: '© 2025 Todos los derechos reservados',
+    liveGifts: '▸ regalos en vivo',
+    more: '▸ más',
+
+    dailyRewardEyebrow: 'recompensa diaria',
+    bagOfLoot: 'Bolsa de',
+    lootHighlight: 'botín!',
+    dailyRewardSub: 'Tu regalo diario gratuito — ábrelo antes de medianoche.',
+    openGift: 'Abrir regalo',
+
+    yourItemsEyebrow: 'tus objetos',
+    inventoryHighlight: 'Inventario',
+    inventorySub: 'Premios y regalos recolectados.',
+    viewAllItems: 'Ver todos los objetos',
+
+    premiumSpinEyebrow: 'giro premium',
+    voidSpinTitle: 'VOID',
+    voidSpinTitleSuffix: 'Spin',
+    voidSpinSub: 'Apuestas más altas — NFTs, Stars y regalos raros en juego.',
+    starsWord: 'Stars',
+    spinNow: 'Girar ahora',
+
+    freeDropsEyebrow: 'drops gratis cada día',
+    freeHighlight: 'GRATIS',
+    channelSuffix: 'Canal',
+    channelSub: 'Únete para no perderte ningún sorteo o código secreto.',
+    joinChannel: 'Unirse al canal',
+
+    exclusiveRewardsEyebrow: 'recompensas exclusivas',
+    enterCodesFor: 'Introduce códigos para',
+    prizesHighlight: 'premios!',
+    findCodes: 'Encuentra códigos en nuestro',
+    telegramWord: 'telegram',
+    channelWord: 'canal.',
+    enterCode: 'Introducir código',
+
+    contactSupport: 'Contactar soporte',
+    settingsAndCodes: 'Configuración y códigos',
+
+    updatesEvery24h: 'se actualiza cada 24 horas',
+    tabCoins: 'Monedas',
+    tabGifts: 'Regalos',
+    tabStars: 'Stars',
+    yourRank: 'Tu posición',
+
+    depositEyebrow: 'telegram stars',
+    depositTitle: 'Depósito',
+    depositSubtitle: 'compra monedas con Telegram Stars',
+    tabTelegramStars: 'Telegram Stars',
+    tabTonCoin: 'TON Coin',
+    securePayment: 'Pago seguro',
+    securePaymentDesc: 'Todas las transacciones se procesan de forma segura a través de Telegram. Las monedas se entregan al instante.',
+    purchase: 'Comprar',
+    popular: 'Popular',
+
+    promocodePlaceholder: 'Introduce el código promocional...',
+    promocodeInfo: 'Introduce un código promocional válido para recibir recompensas',
+
+    soundEffects: 'Efectos de sonido',
+    soundEffectsDesc: 'Reproducir sonidos al girar',
+    prizeAlerts: 'Alertas de premios',
+    prizeAlertsDesc: 'Notificar sobre premios raros',
+    animations: 'Animaciones',
+    animationsDesc: 'Animaciones y efectos suaves',
+    showInLeaderboard: 'Mostrar en la clasificación',
+    showInLeaderboardDesc: 'Visibilidad de estadísticas públicas',
+    shareStatistics: 'Compartir estadísticas',
+    shareStatisticsDesc: 'Permitir compartir estadísticas con amigos',
+
+    about: 'Acerca de',
+    termsOfService: 'Términos de servicio',
+    termsOfServiceDesc: 'Lee nuestros términos y condiciones',
+    privacyPolicy: 'Política de privacidad',
+    privacyPolicyDesc: 'Cómo manejamos tus datos',
+    version: 'Versión',
+    versionDesc: 'Información de la versión de la app',
+
+    resetAllData: 'Restablecer todos los datos',
+    clearCache: 'Borrar caché',
+
+    backToHome: 'Inicio',
+    whatCanIGet: 'Qué puedo',
+    getWord: 'obtener?',
+    spinButton: '¡GIRAR!',
+    coinPrizes: 'Premios en monedas',
+    starPrizes: 'Premios en Stars',
+
+    youWon: 'ganaste',
+    claim: '¡Reclamar!',
+
+    yourPrize: 'tu premio',
+    convertToCoins: 'Convertir a monedas',
+    claimPrize: 'Reclamar premio',
+    coinsWord: 'Monedas',
+    coinsValue: 'monedas de valor',
+    starsAddedToBalance: 'Stars añadidas al saldo',
+
+    selectLanguage: 'Seleccionar idioma',
+
+    yourCompleteInventory: 'Tu inventario completo',
+    totalGifts: 'Regalos totales',
+    totalValue: 'Valor total',
+    rareGifts: 'Regalos raros',
+    filterAll: 'Todos los regalos',
+    filterTelegram: 'Regalos de Telegram',
+    filterNft: 'NFTs',
+    filterRare: 'Solo raros',
+    noGiftsYet: 'Aún no hay regalos',
+    noGiftsYetDesc: '¡Gana tu primer regalo girando la rueda!',
+
+    settingSaved: 'Ajuste guardado',
+    languageChanged: 'Idioma cambiado',
+    paymentSuccessAdding: '¡Pago exitoso! Añadiendo {n} stars…',
+    starsAdded: '¡{n} stars añadidas!',
+    notEnoughStars: 'No tienes suficientes Stars — necesitas {n} ⭐',
+    creatingInvoice: 'Creando factura…',
+    paymentCancelled: 'Pago cancelado',
+    paymentFailed: 'El pago falló. Inténtalo de nuevo.',
+    claimingGift: 'Reclamando tu regalo…',
+    giftSentToTelegram: '¡{name} enviado a tu Telegram!',
+    failedToClaim: 'No se pudo reclamar: {msg}',
+    noPrizeSelected: 'Ningún premio seleccionado',
+    telegramUnavailable: 'Telegram no disponible',
+    giftMappingError: 'Error de mapeo del regalo: {name}',
+    cacheCleared: 'Caché borrada',
+    telegramWebAppUnavailable: 'Telegram WebApp no disponible',
+    userIdUnavailable: 'ID de usuario no disponible',
+    invoiceError: 'Error: {msg}',
+    giftSentPopupTitle: '¡Regalo enviado!',
+    giftSentPopupMessage: '¡Tu regalo {name} ha sido enviado a tu cuenta de Telegram!',
+    claimFailedPopupTitle: 'Error al reclamar',
+
+    promoEnterCode: 'Introduce un código promocional',
+    promoAlreadyRedeemed: 'Código ya canjeado',
+    promoInvalid: 'Código promocional inválido',
+    promoRedeemed: '✓ {message} +{coins} monedas!',
+    promoWelcome: '¡Bono de bienvenida reclamado!',
+    promoLucky: '¡Bono de la suerte activado!',
+    promoFree: '¡Monedas gratis añadidas!',
+    promoVoidGift: '¡Regalo especial canjeado!',
+    promoSpin2Win: '¡Bono de giro desbloqueado!',
+
+    confirmResetData: '⚠️ ¿Eliminar TODOS los datos? Esto no se puede deshacer.',
+    confirmResetType: 'Escribe "RESET" para confirmar:',
+    resetCancelled: 'Restablecimiento cancelado.',
+    allDataReset: '¡Todos los datos restablecidos!\nRecargando…',
+    confirmClearCache: '¿Borrar caché?\n\nTus datos no se verán afectados.'
+  },
+  fr: {
+    home: 'Accueil',
+    leaderboard: 'Classement',
+    inventory: 'Objets',
+    deposit: 'Dépôt',
+    settings: 'Paramètres',
+    customizeExperience: 'Personnalisez votre expérience',
+    promocode: 'Code promo',
+    language: 'Langue',
+    appLanguage: "Langue de l'application",
+    chooseLanguage: 'Choisissez votre langue préférée',
+    notifications: 'Notifications',
+    display: 'Affichage',
+    privacy: 'Confidentialité',
+    dangerZone: 'Zone dangereuse',
+    topPlayers: 'Classement',
+
+    copyright: '© 2025 Tous droits réservés',
+    liveGifts: '▸ cadeaux en direct',
+    more: '▸ plus',
+
+    dailyRewardEyebrow: 'récompense quotidienne',
+    bagOfLoot: 'Sac de',
+    lootHighlight: 'butin!',
+    dailyRewardSub: 'Votre cadeau quotidien gratuit — ouvrez-le avant minuit.',
+    openGift: 'Ouvrir le cadeau',
+
+    yourItemsEyebrow: 'vos objets',
+    inventoryHighlight: 'Inventaire',
+    inventorySub: 'Prix et cadeaux collectés.',
+    viewAllItems: 'Voir tous les objets',
+
+    premiumSpinEyebrow: 'spin premium',
+    voidSpinTitle: 'VOID',
+    voidSpinTitleSuffix: 'Spin',
+    voidSpinSub: 'Enjeux plus élevés — NFT, Stars et cadeaux rares à gagner.',
+    starsWord: 'Stars',
+    spinNow: 'Tourner',
+
+    freeDropsEyebrow: 'drops gratuits chaque jour',
+    freeHighlight: 'GRATUIT',
+    channelSuffix: 'Chaîne',
+    channelSub: 'Rejoignez pour ne jamais manquer un tirage ou un code secret.',
+    joinChannel: 'Rejoindre la chaîne',
+
+    exclusiveRewardsEyebrow: 'récompenses exclusives',
+    enterCodesFor: 'Entrez des codes pour',
+    prizesHighlight: 'des prix!',
+    findCodes: 'Trouvez des codes sur notre',
+    telegramWord: 'telegram',
+    channelWord: 'chaîne.',
+    enterCode: 'Entrer le code',
+
+    contactSupport: 'Contacter le support',
+    settingsAndCodes: 'Paramètres et codes',
+
+    updatesEvery24h: 'mis à jour toutes les 24 heures',
+    tabCoins: 'Pièces',
+    tabGifts: 'Cadeaux',
+    tabStars: 'Stars',
+    yourRank: 'Votre rang',
+
+    depositEyebrow: 'telegram stars',
+    depositTitle: 'Dépôt',
+    depositSubtitle: 'achetez des pièces avec des Telegram Stars',
+    tabTelegramStars: 'Telegram Stars',
+    tabTonCoin: 'TON Coin',
+    securePayment: 'Paiement sécurisé',
+    securePaymentDesc: 'Toutes les transactions sont traitées en toute sécurité via Telegram. Les pièces sont livrées instantanément.',
+    purchase: 'Acheter',
+    popular: 'Populaire',
+
+    promocodePlaceholder: 'Entrez le code promo...',
+    promocodeInfo: 'Entrez un code promo valide pour recevoir des récompenses',
+
+    soundEffects: 'Effets sonores',
+    soundEffectsDesc: 'Jouer des sons lors du spin',
+    prizeAlerts: 'Alertes de prix',
+    prizeAlertsDesc: 'Notifier pour les prix rares',
+    animations: 'Animations',
+    animationsDesc: 'Animations et effets fluides',
+    showInLeaderboard: 'Afficher dans le classement',
+    showInLeaderboardDesc: 'Visibilité des statistiques publiques',
+    shareStatistics: 'Partager les statistiques',
+    shareStatisticsDesc: 'Autoriser le partage des statistiques avec des amis',
+
+    about: 'À propos',
+    termsOfService: "Conditions d'utilisation",
+    termsOfServiceDesc: 'Lisez nos conditions générales',
+    privacyPolicy: 'Politique de confidentialité',
+    privacyPolicyDesc: 'Comment nous traitons vos données',
+    version: 'Version',
+    versionDesc: "Informations sur la version de l'application",
+
+    resetAllData: 'Réinitialiser toutes les données',
+    clearCache: 'Vider le cache',
+
+    backToHome: 'Accueil',
+    whatCanIGet: 'Que puis-je',
+    getWord: 'gagner?',
+    spinButton: 'SPIN!',
+    coinPrizes: 'Prix en pièces',
+    starPrizes: 'Prix en Stars',
+
+    youWon: 'vous avez gagné',
+    claim: 'Réclamer!',
+
+    yourPrize: 'votre prix',
+    convertToCoins: 'Convertir en pièces',
+    claimPrize: 'Réclamer le prix',
+    coinsWord: 'Pièces',
+    coinsValue: 'pièces de valeur',
+    starsAddedToBalance: 'Stars ajoutées au solde',
+
+    selectLanguage: 'Sélectionner la langue',
+
+    yourCompleteInventory: 'Votre inventaire complet',
+    totalGifts: 'Cadeaux totaux',
+    totalValue: 'Valeur totale',
+    rareGifts: 'Cadeaux rares',
+    filterAll: 'Tous les cadeaux',
+    filterTelegram: 'Cadeaux Telegram',
+    filterNft: 'NFT',
+    filterRare: 'Rares uniquement',
+    noGiftsYet: 'Pas encore de cadeaux',
+    noGiftsYetDesc: 'Gagnez votre premier cadeau en tournant la roue !',
+
+    settingSaved: 'Paramètre enregistré',
+    languageChanged: 'Langue changée',
+    paymentSuccessAdding: 'Paiement réussi ! Ajout de {n} stars…',
+    starsAdded: '{n} stars ajoutées !',
+    notEnoughStars: 'Pas assez de Stars — {n} nécessaires ⭐',
+    creatingInvoice: 'Création de la facture…',
+    paymentCancelled: 'Paiement annulé',
+    paymentFailed: 'Le paiement a échoué. Veuillez réessayer.',
+    claimingGift: 'Réclamation de votre cadeau…',
+    giftSentToTelegram: '{name} envoyé sur votre Telegram !',
+    failedToClaim: 'Échec de la réclamation : {msg}',
+    noPrizeSelected: 'Aucun prix sélectionné',
+    telegramUnavailable: 'Telegram indisponible',
+    giftMappingError: 'Erreur de mappage du cadeau : {name}',
+    cacheCleared: 'Cache vidé',
+    telegramWebAppUnavailable: 'Telegram WebApp non disponible',
+    userIdUnavailable: "ID utilisateur non disponible",
+    invoiceError: 'Erreur : {msg}',
+    giftSentPopupTitle: 'Cadeau envoyé !',
+    giftSentPopupMessage: 'Votre cadeau {name} a été envoyé sur votre compte Telegram !',
+    claimFailedPopupTitle: 'Échec de la réclamation',
+
+    promoEnterCode: 'Veuillez entrer un code promo',
+    promoAlreadyRedeemed: 'Code déjà utilisé',
+    promoInvalid: 'Code promo invalide',
+    promoRedeemed: '✓ {message} +{coins} pièces !',
+    promoWelcome: 'Bonus de bienvenue réclamé !',
+    promoLucky: 'Bonus chanceux activé !',
+    promoFree: 'Pièces gratuites ajoutées !',
+    promoVoidGift: 'Cadeau spécial échangé !',
+    promoSpin2Win: 'Bonus de spin débloqué !',
+
+    confirmResetData: '⚠️ Supprimer TOUTES les données ? Ceci est irréversible.',
+    confirmResetType: 'Tapez "RESET" pour confirmer :',
+    resetCancelled: 'Réinitialisation annulée.',
+    allDataReset: 'Toutes les données réinitialisées !\nRechargement…',
+    confirmClearCache: 'Vider le cache ?\n\nVos données ne seront pas affectées.'
+  },
+  de: {
+    home: 'Start',
+    leaderboard: 'Bestenliste',
+    inventory: 'Gegenstände',
+    deposit: 'Einzahlung',
+    settings: 'Einstellungen',
+    customizeExperience: 'Passe deine Erfahrung an',
+    promocode: 'Gutscheincode',
+    language: 'Sprache',
+    appLanguage: 'App-Sprache',
+    chooseLanguage: 'Wähle deine bevorzugte Sprache',
+    notifications: 'Benachrichtigungen',
+    display: 'Anzeige',
+    privacy: 'Datenschutz',
+    dangerZone: 'Gefahrenzone',
+    topPlayers: 'Bestenliste',
+
+    copyright: '© 2025 Alle Rechte vorbehalten',
+    liveGifts: '▸ Live-Geschenke',
+    more: '▸ mehr',
+
+    dailyRewardEyebrow: 'tägliche Belohnung',
+    bagOfLoot: 'Beutel voller',
+    lootHighlight: 'Beute!',
+    dailyRewardSub: 'Dein kostenloses tägliches Geschenk — öffne es vor Mitternacht.',
+    openGift: 'Geschenk öffnen',
+
+    yourItemsEyebrow: 'deine Gegenstände',
+    inventoryHighlight: 'Inventar',
+    inventorySub: 'Gesammelte Preise und Geschenke.',
+    viewAllItems: 'Alle Gegenstände ansehen',
+
+    premiumSpinEyebrow: 'Premium-Spin',
+    voidSpinTitle: 'VOID',
+    voidSpinTitleSuffix: 'Spin',
+    voidSpinSub: 'Höhere Einsätze — NFTs, Stars und seltene Geschenke zu gewinnen.',
+    starsWord: 'Stars',
+    spinNow: 'Jetzt drehen',
+
+    freeDropsEyebrow: 'kostenlose Drops jeden Tag',
+    freeHighlight: 'GRATIS',
+    channelSuffix: 'Kanal',
+    channelSub: 'Trete bei, um kein Gewinnspiel oder Geheimcode zu verpassen.',
+    joinChannel: 'Kanal beitreten',
+
+    exclusiveRewardsEyebrow: 'exklusive Belohnungen',
+    enterCodesFor: 'Codes eingeben für',
+    prizesHighlight: 'Preise!',
+    findCodes: 'Codes findest du in unserem',
+    telegramWord: 'telegram',
+    channelWord: 'Kanal.',
+    enterCode: 'Code eingeben',
+
+    contactSupport: 'Support kontaktieren',
+    settingsAndCodes: 'Einstellungen & Codes',
+
+    updatesEvery24h: 'aktualisiert alle 24 Stunden',
+    tabCoins: 'Münzen',
+    tabGifts: 'Geschenke',
+    tabStars: 'Stars',
+    yourRank: 'Dein Rang',
+
+    depositEyebrow: 'telegram stars',
+    depositTitle: 'Einzahlung',
+    depositSubtitle: 'kaufe Münzen mit Telegram Stars',
+    tabTelegramStars: 'Telegram Stars',
+    tabTonCoin: 'TON Coin',
+    securePayment: 'Sichere Zahlung',
+    securePaymentDesc: 'Alle Transaktionen werden sicher über Telegram abgewickelt. Münzen werden sofort gutgeschrieben.',
+    purchase: 'Kaufen',
+    popular: 'Beliebt',
+
+    promocodePlaceholder: 'Gutscheincode eingeben...',
+    promocodeInfo: 'Gib einen gültigen Gutscheincode ein, um Belohnungen zu erhalten',
+
+    soundEffects: 'Soundeffekte',
+    soundEffectsDesc: 'Sounds beim Drehen abspielen',
+    prizeAlerts: 'Preisbenachrichtigungen',
+    prizeAlertsDesc: 'Bei seltenen Preisen benachrichtigen',
+    animations: 'Animationen',
+    animationsDesc: 'Sanfte Animationen und Effekte',
+    showInLeaderboard: 'In der Bestenliste anzeigen',
+    showInLeaderboardDesc: 'Sichtbarkeit öffentlicher Statistiken',
+    shareStatistics: 'Statistiken teilen',
+    shareStatisticsDesc: 'Erlauben, Statistiken mit Freunden zu teilen',
+
+    about: 'Über',
+    termsOfService: 'Nutzungsbedingungen',
+    termsOfServiceDesc: 'Lies unsere Allgemeinen Geschäftsbedingungen',
+    privacyPolicy: 'Datenschutzrichtlinie',
+    privacyPolicyDesc: 'Wie wir mit deinen Daten umgehen',
+    version: 'Version',
+    versionDesc: 'App-Versionsinformationen',
+
+    resetAllData: 'Alle Daten zurücksetzen',
+    clearCache: 'Cache leeren',
+
+    backToHome: 'Start',
+    whatCanIGet: 'Was kann ich',
+    getWord: 'gewinnen?',
+    spinButton: 'DREHEN!',
+    coinPrizes: 'Münzpreise',
+    starPrizes: 'Star-Preise',
+
+    youWon: 'du hast gewonnen',
+    claim: 'Abholen!',
+
+    yourPrize: 'dein Preis',
+    convertToCoins: 'In Münzen umwandeln',
+    claimPrize: 'Preis abholen',
+    coinsWord: 'Münzen',
+    coinsValue: 'Münzen Wert',
+    starsAddedToBalance: 'Stars zum Guthaben hinzugefügt',
+
+    selectLanguage: 'Sprache auswählen',
+
+    yourCompleteInventory: 'Dein komplettes Inventar',
+    totalGifts: 'Geschenke gesamt',
+    totalValue: 'Gesamtwert',
+    rareGifts: 'Seltene Geschenke',
+    filterAll: 'Alle Geschenke',
+    filterTelegram: 'Telegram-Geschenke',
+    filterNft: 'NFTs',
+    filterRare: 'Nur Seltene',
+    noGiftsYet: 'Noch keine Geschenke',
+    noGiftsYetDesc: 'Gewinne dein erstes Geschenk, indem du das Rad drehst!',
+
+    settingSaved: 'Einstellung gespeichert',
+    languageChanged: 'Sprache geändert',
+    paymentSuccessAdding: 'Zahlung erfolgreich! {n} Stars werden hinzugefügt…',
+    starsAdded: '{n} Stars hinzugefügt!',
+    notEnoughStars: 'Nicht genug Stars — {n} benötigt ⭐',
+    creatingInvoice: 'Rechnung wird erstellt…',
+    paymentCancelled: 'Zahlung abgebrochen',
+    paymentFailed: 'Zahlung fehlgeschlagen. Bitte erneut versuchen.',
+    claimingGift: 'Dein Geschenk wird abgeholt…',
+    giftSentToTelegram: '{name} an dein Telegram gesendet!',
+    failedToClaim: 'Abholen fehlgeschlagen: {msg}',
+    noPrizeSelected: 'Kein Preis ausgewählt',
+    telegramUnavailable: 'Telegram nicht verfügbar',
+    giftMappingError: 'Geschenk-Zuordnungsfehler: {name}',
+    cacheCleared: 'Cache geleert',
+    telegramWebAppUnavailable: 'Telegram WebApp nicht verfügbar',
+    userIdUnavailable: 'Benutzer-ID nicht verfügbar',
+    invoiceError: 'Fehler: {msg}',
+    giftSentPopupTitle: 'Geschenk gesendet!',
+    giftSentPopupMessage: 'Dein {name}-Geschenk wurde an dein Telegram-Konto gesendet!',
+    claimFailedPopupTitle: 'Abholen fehlgeschlagen',
+
+    promoEnterCode: 'Bitte gib einen Gutscheincode ein',
+    promoAlreadyRedeemed: 'Code bereits eingelöst',
+    promoInvalid: 'Ungültiger Gutscheincode',
+    promoRedeemed: '✓ {message} +{coins} Münzen!',
+    promoWelcome: 'Willkommensbonus erhalten!',
+    promoLucky: 'Glücksbonus aktiviert!',
+    promoFree: 'Kostenlose Münzen hinzugefügt!',
+    promoVoidGift: 'Spezielles Geschenk eingelöst!',
+    promoSpin2Win: 'Spin-Bonus freigeschaltet!',
+
+    confirmResetData: '⚠️ ALLE Daten löschen? Dies kann nicht rückgängig gemacht werden.',
+    confirmResetType: 'Gib zur Bestätigung "RESET" ein:',
+    resetCancelled: 'Zurücksetzen abgebrochen.',
+    allDataReset: 'Alle Daten zurückgesetzt!\nWird neu geladen…',
+    confirmClearCache: 'Cache leeren?\n\nDeine Daten bleiben unberührt.'
+  },
+  zh: {
+    home: '首页',
+    leaderboard: '排行榜',
+    inventory: '物品',
+    deposit: '充值',
+    settings: '设置',
+    customizeExperience: '自定义您的体验',
+    promocode: '兑换码',
+    language: '语言',
+    appLanguage: '应用语言',
+    chooseLanguage: '选择您的首选语言',
+    notifications: '通知',
+    display: '显示',
+    privacy: '隐私',
+    dangerZone: '危险区域',
+    topPlayers: '排行榜',
+
+    copyright: '© 2025 版权所有',
+    liveGifts: '▸ 实时礼物',
+    more: '▸ 更多',
+
+    dailyRewardEyebrow: '每日奖励',
+    bagOfLoot: '战利品',
+    lootHighlight: '袋！',
+    dailyRewardSub: '您的免费每日礼物 — 请在午夜前领取。',
+    openGift: '打开礼物',
+
+    yourItemsEyebrow: '您的物品',
+    inventoryHighlight: '库存',
+    inventorySub: '已收集的奖品和礼物。',
+    viewAllItems: '查看全部物品',
+
+    premiumSpinEyebrow: '高级转盘',
+    voidSpinTitle: 'VOID',
+    voidSpinTitleSuffix: 'Spin',
+    voidSpinSub: '更高赌注 — NFT、星星和稀有礼物等你来拿。',
+    starsWord: '星星',
+    spinNow: '立即旋转',
+
+    freeDropsEyebrow: '每日免费掉落',
+    freeHighlight: '免费',
+    channelSuffix: '频道',
+    channelSub: '加入以不错过任何抽奖或秘密代码。',
+    joinChannel: '加入频道',
+
+    exclusiveRewardsEyebrow: '专属奖励',
+    enterCodesFor: '输入兑换码获取',
+    prizesHighlight: '奖品！',
+    findCodes: '在我们的',
+    telegramWord: 'telegram',
+    channelWord: '频道中查找兑换码。',
+    enterCode: '输入兑换码',
+
+    contactSupport: '联系客服',
+    settingsAndCodes: '设置与兑换码',
+
+    updatesEvery24h: '每24小时更新一次',
+    tabCoins: '金币',
+    tabGifts: '礼物',
+    tabStars: '星星',
+    yourRank: '您的排名',
+
+    depositEyebrow: 'telegram stars',
+    depositTitle: '充值',
+    depositSubtitle: '使用 Telegram Stars 购买金币',
+    tabTelegramStars: 'Telegram Stars',
+    tabTonCoin: 'TON Coin',
+    securePayment: '安全支付',
+    securePaymentDesc: '所有交易均通过 Telegram 安全处理。金币即时到账。',
+    purchase: '购买',
+    popular: '热门',
+
+    promocodePlaceholder: '输入兑换码...',
+    promocodeInfo: '输入有效的兑换码以获取奖励',
+
+    soundEffects: '音效',
+    soundEffectsDesc: '旋转时播放声音',
+    prizeAlerts: '奖品提醒',
+    prizeAlertsDesc: '稀有奖品提醒',
+    animations: '动画',
+    animationsDesc: '流畅的动画与特效',
+    showInLeaderboard: '在排行榜中显示',
+    showInLeaderboardDesc: '公开统计信息可见性',
+    shareStatistics: '分享统计信息',
+    shareStatisticsDesc: '允许与好友分享统计信息',
+
+    about: '关于',
+    termsOfService: '服务条款',
+    termsOfServiceDesc: '阅读我们的条款和条件',
+    privacyPolicy: '隐私政策',
+    privacyPolicyDesc: '我们如何处理您的数据',
+    version: '版本',
+    versionDesc: '应用版本信息',
+
+    resetAllData: '重置所有数据',
+    clearCache: '清除缓存',
+
+    backToHome: '首页',
+    whatCanIGet: '我能获得',
+    getWord: '什么？',
+    spinButton: '旋转！',
+    coinPrizes: '金币奖品',
+    starPrizes: '星星奖品',
+
+    youWon: '您赢得了',
+    claim: '领取！',
+
+    yourPrize: '您的奖品',
+    convertToCoins: '兑换为金币',
+    claimPrize: '领取奖品',
+    coinsWord: '金币',
+    coinsValue: '金币价值',
+    starsAddedToBalance: '星星已添加到余额',
+
+    selectLanguage: '选择语言',
+
+    yourCompleteInventory: '您的完整库存',
+    totalGifts: '礼物总数',
+    totalValue: '总价值',
+    rareGifts: '稀有礼物',
+    filterAll: '全部礼物',
+    filterTelegram: 'Telegram 礼物',
+    filterNft: 'NFT',
+    filterRare: '仅稀有',
+    noGiftsYet: '暂无礼物',
+    noGiftsYetDesc: '转动转盘赢取您的第一个礼物！',
+
+    settingSaved: '设置已保存',
+    languageChanged: '语言已更改',
+    paymentSuccessAdding: '支付成功！正在添加 {n} 星星…',
+    starsAdded: '已添加 {n} 星星！',
+    notEnoughStars: '星星不足 — 需要 {n} ⭐',
+    creatingInvoice: '正在创建发票…',
+    paymentCancelled: '支付已取消',
+    paymentFailed: '支付失败，请重试。',
+    claimingGift: '正在领取您的礼物…',
+    giftSentToTelegram: '{name} 已发送到您的 Telegram！',
+    failedToClaim: '领取失败：{msg}',
+    noPrizeSelected: '未选择奖品',
+    telegramUnavailable: 'Telegram 不可用',
+    giftMappingError: '礼物映射错误：{name}',
+    cacheCleared: '缓存已清除',
+    telegramWebAppUnavailable: 'Telegram WebApp 不可用',
+    userIdUnavailable: '用户ID不可用',
+    invoiceError: '错误：{msg}',
+    giftSentPopupTitle: '礼物已发送！',
+    giftSentPopupMessage: '您的 {name} 礼物已发送到您的 Telegram 账户！',
+    claimFailedPopupTitle: '领取失败',
+
+    promoEnterCode: '请输入兑换码',
+    promoAlreadyRedeemed: '兑换码已使用',
+    promoInvalid: '无效的兑换码',
+    promoRedeemed: '✓ {message} +{coins} 金币！',
+    promoWelcome: '欢迎奖励已领取！',
+    promoLucky: '幸运奖励已激活！',
+    promoFree: '已添加免费金币！',
+    promoVoidGift: '特殊礼物已兑换！',
+    promoSpin2Win: '旋转奖励已解锁！',
+
+    confirmResetData: '⚠️ 删除所有数据？此操作无法撤销。',
+    confirmResetType: '输入 "RESET" 以确认：',
+    resetCancelled: '重置已取消。',
+    allDataReset: '所有数据已重置！\n正在重新加载…',
+    confirmClearCache: '清除缓存？\n\n您的数据不会受到影响。'
   }
 };
 
@@ -390,9 +1332,15 @@ const Utils = {
     return `${four}-${two}-${three}`;
   },
 
-  t(key) {
+  // t(key, vars) — vars is an optional { token: value } map used to fill
+  // {token} placeholders in the translated string (e.g. t('starsAdded', { n: 50 })).
+  t(key, vars) {
     const lang = STATE.settings.language;
-    return TRANSLATIONS[lang]?.[key] ?? TRANSLATIONS.en[key] ?? key;
+    let str = TRANSLATIONS[lang]?.[key] ?? TRANSLATIONS.en[key] ?? key;
+    if (vars) {
+      Object.keys(vars).forEach(k => { str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), vars[k]); });
+    }
+    return str;
   },
 
   createErrorIcon() {
@@ -870,7 +1818,7 @@ const PrizeModal = {
     const coinsVal = PRIZE_COIN_VALUES[prize.value] ?? 50;
     valueEl.innerHTML = `
       <img src="assets/Coin.svg" alt="Coins">
-      <span>${coinsVal.toLocaleString()} Coins</span>
+      <span>${coinsVal.toLocaleString()} ${Utils.t('coinsWord')}</span>
     `;
 
     modal.classList.add('show');
@@ -901,7 +1849,7 @@ const PrizeModal = {
   },
 
   async claim() {
-    if (!STATE.currentModalPrize) { Utils.showToast('No prize selected', 'error'); return; }
+    if (!STATE.currentModalPrize) { Utils.showToast(Utils.t('noPrizeSelected'), 'error'); return; }
     if (STATE.isClaimingPrize) return; // already mid-claim — ignore extra clicks
 
     const prize          = STATE.currentModalPrize;
@@ -909,15 +1857,15 @@ const PrizeModal = {
     const giftName       = prize.value;
     const telegramGiftId = TELEGRAM_GIFT_IDS[giftName];
 
-    if (!telegramGiftId) { Utils.showToast(`Gift mapping error: ${giftName}`, 'error'); return; }
-    if (!STATE.tg?.initDataUnsafe?.user?.id) { Utils.showToast('Telegram unavailable', 'error'); return; }
+    if (!telegramGiftId) { Utils.showToast(Utils.t('giftMappingError', { name: giftName }), 'error'); return; }
+    if (!STATE.tg?.initDataUnsafe?.user?.id) { Utils.showToast(Utils.t('telegramUnavailable'), 'error'); return; }
 
     const userId   = STATE.tg.initDataUnsafe.user.id;
     const claimBtn = document.getElementById('claimPrizeBtn');
 
     STATE.isClaimingPrize = true;
-    Utils.showToast('Claiming your gift…', 'success');
-    if (claimBtn) { claimBtn.disabled = true; claimBtn.textContent = 'Claiming…'; }
+    Utils.showToast(Utils.t('claimingGift'), 'success');
+    if (claimBtn) { claimBtn.disabled = true; claimBtn.textContent = Utils.t('claimingGift'); }
 
     try {
       const res = await fetch('https://vgtserver-production.up.railway.app/claim-gift', {
@@ -929,23 +1877,23 @@ const PrizeModal = {
 
       Inventory.remove(prizeId);
       this.close();
-      Utils.showToast(`${giftName} sent to your Telegram!`, 'success');
+      Utils.showToast(Utils.t('giftSentToTelegram', { name: giftName }), 'success');
 
       STATE.tg.showPopup?.({
-        title: 'Gift Sent!',
-        message: `Your ${giftName} gift has been sent to your Telegram account!`,
+        title: Utils.t('giftSentPopupTitle'),
+        message: Utils.t('giftSentPopupMessage', { name: giftName }),
         buttons: [{ type: 'close' }]
       });
     } catch (error) {
-      Utils.showToast(`Failed to claim: ${error.message}`, 'error');
+      Utils.showToast(Utils.t('failedToClaim', { msg: error.message }), 'error');
       STATE.tg?.showPopup?.({
-        title: 'Claim Failed',
+        title: Utils.t('claimFailedPopupTitle'),
         message: `${error.message}\n\nPrize ID: ${prizeId}`,
         buttons: [{ type: 'close' }]
       });
     } finally {
       STATE.isClaimingPrize = false;
-      if (claimBtn) { claimBtn.disabled = false; claimBtn.textContent = 'Claim Prize'; }
+      if (claimBtn) { claimBtn.disabled = false; claimBtn.textContent = Utils.t('claimPrize'); }
     }
   }
 };
@@ -1169,7 +2117,7 @@ const FullInventoryModal = {
       lottie.loadAnimation({ container: iconEl, renderer: 'svg', loop: true, autoplay: true, path: 'assets/CrystalForInv.json' });
     }
     this.updateStats();
-    this.render('all');
+    this.render(STATE.currentFilter);
     modal.classList.add('show');
   },
 
@@ -1264,7 +2212,7 @@ const Leaderboard = {
       });
     });
 
-    this.render('coins');
+    this.render(STATE.currentLeaderboardTab);
   },
 
   render(type) {
@@ -1296,7 +2244,7 @@ const Leaderboard = {
   _scoreText(player, type) {
     if (type === 'coins') return player.coins.toLocaleString();
     if (type === 'stars') return `${player.stars.toLocaleString()} ⭐`;
-    return `${player.gifts} gifts`;
+    return `${player.gifts} ${Utils.t('tabGifts').toLowerCase()}`;
   },
 
   createPodiumCard(player, rank, type) {
@@ -1333,19 +2281,24 @@ const Leaderboard = {
     nameEl.textContent = uName;
     if (type === 'coins') {
       rankEl.textContent  = STATE.leaderboardData.coins.filter(p => p.coins > STATE.userCoins).length + 1;
-      scoreEl.textContent = `${STATE.userCoins.toLocaleString()} coins`;
+      scoreEl.textContent = `${STATE.userCoins.toLocaleString()} ${Utils.t('tabCoins').toLowerCase()}`;
     } else if (type === 'stars') {
       rankEl.textContent  = STATE.leaderboardData.stars.filter(p => p.stars > STATE.userStars).length + 1;
       scoreEl.textContent = `${STATE.userStars.toLocaleString()} ⭐`;
     } else {
       const gifts = STATE.inventoryItems.length;
       rankEl.textContent  = STATE.leaderboardData.gifts.filter(p => p.gifts > gifts).length + 1;
-      scoreEl.textContent = `${gifts} gifts`;
+      scoreEl.textContent = `${gifts} ${Utils.t('tabGifts').toLowerCase()}`;
     }
   },
 
   updateData() {
     if (STATE.currentPage === 'leaderboard') this.updateYourRank(STATE.currentLeaderboardTab);
+  },
+
+  // Re-render whatever's currently on screen with fresh translated strings.
+  refreshLabels() {
+    if (STATE.currentPage === 'leaderboard') this.render(STATE.currentLeaderboardTab);
   }
 };
 
@@ -1372,7 +2325,7 @@ const Deposit = {
     card.style.animationDelay = `${index * 0.05}s`;
 
     if (pkg.popular) {
-      const badge = Object.assign(document.createElement('div'), { className: 'popular-badge', textContent: 'Popular' });
+      const badge = Object.assign(document.createElement('div'), { className: 'popular-badge', textContent: Utils.t('popular') });
       card.appendChild(badge);
     }
 
@@ -1382,13 +2335,13 @@ const Deposit = {
     card.appendChild(icon);
 
     const amt = Object.assign(document.createElement('div'), { className: 'package-amount', textContent: pkg.amount.toLocaleString() });
-    const cur = Object.assign(document.createElement('div'), { className: 'package-currency', textContent: 'Stars' });
+    const cur = Object.assign(document.createElement('div'), { className: 'package-currency', textContent: Utils.t('starsWord') });
     const div = document.createElement('div'); div.className = 'package-divider';
 
     const coins = document.createElement('div'); coins.className = 'package-coins';
-    coins.innerHTML = `<img src="assets/TStars.svg" alt="Star"><span>${pkg.stars.toLocaleString()} Stars</span>`;
+    coins.innerHTML = `<img src="assets/TStars.svg" alt="Star"><span>${pkg.stars.toLocaleString()} ${Utils.t('starsWord')}</span>`;
 
-    const btn = Object.assign(document.createElement('button'), { className: 'package-buy-btn', textContent: 'Purchase' });
+    const btn = Object.assign(document.createElement('button'), { className: 'package-buy-btn', textContent: Utils.t('purchase') });
     btn.addEventListener('click', () => this.purchasePackage(pkg, type));
 
     card.append(amt, cur, div, coins, btn);
@@ -1396,11 +2349,11 @@ const Deposit = {
   },
 
   async purchasePackage(pkg) {
-    if (!STATE.tg) { Utils.showToast('Telegram WebApp not available', 'error'); return; }
+    if (!STATE.tg) { Utils.showToast(Utils.t('telegramWebAppUnavailable'), 'error'); return; }
     const userId = STATE.tg.initDataUnsafe?.user?.id;
-    if (!userId)  { Utils.showToast('User ID not available', 'error'); return; }
+    if (!userId)  { Utils.showToast(Utils.t('userIdUnavailable'), 'error'); return; }
 
-    Utils.showToast('Creating invoice…', 'success');
+    Utils.showToast(Utils.t('creatingInvoice'), 'success');
 
     try {
       const res = await fetch('https://vgservers-production.up.railway.app/create-invoice', {
@@ -1414,16 +2367,16 @@ const Deposit = {
 
       STATE.tg.openInvoice(data.invoiceLink, async (status) => {
         if (status === 'paid') {
-          Utils.showToast(`Payment successful! Adding ${pkg.stars} stars…`, 'success');
+          Utils.showToast(Utils.t('paymentSuccessAdding', { n: pkg.stars }), 'success');
           setTimeout(() => BackendAPI.syncBalance(), 1500);
         } else if (status === 'cancelled') {
-          Utils.showToast('Payment cancelled', 'error');
+          Utils.showToast(Utils.t('paymentCancelled'), 'error');
         } else if (status === 'failed') {
-          Utils.showToast('Payment failed. Please try again.', 'error');
+          Utils.showToast(Utils.t('paymentFailed'), 'error');
         }
       });
     } catch (error) {
-      Utils.showToast(`Error: ${error.message}`, 'error');
+      Utils.showToast(Utils.t('invoiceError', { msg: error.message }), 'error');
     }
   },
 
@@ -1440,6 +2393,11 @@ const Deposit = {
         }
       });
     }, 500);
+  },
+
+  // Re-render currently visible packages so "Popular"/"Purchase"/"Stars" pick up the new language.
+  refreshLabels() {
+    if (STATE.currentPage === 'deposit') this.renderPackages(STATE.currentDepositTab);
   }
 };
 
@@ -1645,9 +2603,9 @@ const SpinWheel = {
       const img = Object.assign(document.createElement('img'), { src: 'assets/Coin.svg', alt: 'Coins' });
       img.style.cssText = 'width:100%;height:100%;object-fit:contain;animation:prizeFloat 2.5s ease-in-out infinite;filter:drop-shadow(0 12px 32px rgba(245,194,107,.4))';
       iconEl.appendChild(img);
-      nameEl.innerHTML = `<span class="hl">${prize.value}</span> Coins`;
+      nameEl.innerHTML = `<span class="hl">${prize.value}</span> ${Utils.t('coinsWord')}`;
       if (valueRow) {
-        valueRow.innerHTML = `<img src="assets/Coin.svg" alt="Coins" style="width:22px;height:22px"><span>${prize.value} Coins</span>`;
+        valueRow.innerHTML = `<img src="assets/Coin.svg" alt="Coins" style="width:22px;height:22px"><span>${prize.value} ${Utils.t('coinsWord')}</span>`;
         valueRow.style.display = 'flex';
       }
     } else {
@@ -1659,7 +2617,7 @@ const SpinWheel = {
       nameEl.innerHTML = `the <span class="hl">${prize.value}</span>`;
       if (valueRow) {
         const val = PRIZE_COIN_VALUES[prize.value] ?? 50;
-        valueRow.innerHTML = `<img src="assets/Coin.svg" alt="Coins" style="width:22px;height:22px"><span>${val.toLocaleString()} Coins value</span>`;
+        valueRow.innerHTML = `<img src="assets/Coin.svg" alt="Coins" style="width:22px;height:22px"><span>${val.toLocaleString()} ${Utils.t('coinsValue')}</span>`;
         valueRow.style.display = 'flex';
       }
     }
@@ -1898,7 +2856,7 @@ const VoidSpinWheel = {
     // Cost check — happens before anything else moves. Deduct-on-press,
     // not on claim, per spec.
     if (STATE.userStars < CONFIG.VOID_SPIN_COST) {
-      Utils.showToast(`Not enough Stars — need ${CONFIG.VOID_SPIN_COST} ⭐`, 'error');
+      Utils.showToast(Utils.t('notEnoughStars', { n: CONFIG.VOID_SPIN_COST }), 'error');
       if (btn) {
         btn.classList.remove('shake-error');
         void btn.offsetWidth; // restart the animation if it's already mid-shake
@@ -1981,18 +2939,18 @@ const VoidSpinWheel = {
       const img = Object.assign(document.createElement('img'), { src: 'assets/Coin.svg', alt: 'Coins' });
       img.style.cssText = 'width:100%;height:100%;object-fit:contain;animation:prizeFloat 2.5s ease-in-out infinite;filter:drop-shadow(0 12px 32px rgba(192,132,252,.4))';
       iconEl.appendChild(img);
-      nameEl.innerHTML = `<span class="hl">${prize.value}</span> Coins`;
+      nameEl.innerHTML = `<span class="hl">${prize.value}</span> ${Utils.t('coinsWord')}`;
       if (valueRow) {
-        valueRow.innerHTML = `<img src="assets/Coin.svg" alt="Coins" style="width:22px;height:22px"><span>${prize.value} Coins</span>`;
+        valueRow.innerHTML = `<img src="assets/Coin.svg" alt="Coins" style="width:22px;height:22px"><span>${prize.value} ${Utils.t('coinsWord')}</span>`;
         valueRow.style.display = 'flex';
       }
     } else if (prize.type === 'stars') {
       const img = Object.assign(document.createElement('img'), { src: 'assets/TStars.svg', alt: 'Stars' });
       img.style.cssText = 'width:100%;height:100%;object-fit:contain;animation:prizeFloat 2.5s ease-in-out infinite;filter:drop-shadow(0 12px 32px rgba(192,132,252,.4))';
       iconEl.appendChild(img);
-      nameEl.innerHTML = `<span class="hl">${prize.value}</span> Stars`;
+      nameEl.innerHTML = `<span class="hl">${prize.value}</span> ${Utils.t('starsWord')}`;
       if (valueRow) {
-        valueRow.innerHTML = `<img src="assets/TStars.svg" alt="Stars" style="width:22px;height:22px"><span>${prize.value} Stars added to balance</span>`;
+        valueRow.innerHTML = `<img src="assets/TStars.svg" alt="Stars" style="width:22px;height:22px"><span>${prize.value} ${Utils.t('starsAddedToBalance')}</span>`;
         valueRow.style.display = 'flex';
       }
     } else {
@@ -2004,7 +2962,7 @@ const VoidSpinWheel = {
       nameEl.innerHTML = `the <span class="hl">${prize.value}</span>`;
       if (valueRow) {
         const val = PRIZE_COIN_VALUES[prize.value] ?? 50;
-        valueRow.innerHTML = `<img src="assets/Coin.svg" alt="Coins" style="width:22px;height:22px"><span>${val.toLocaleString()} Coins value</span>`;
+        valueRow.innerHTML = `<img src="assets/Coin.svg" alt="Coins" style="width:22px;height:22px"><span>${val.toLocaleString()} ${Utils.t('coinsValue')}</span>`;
         valueRow.style.display = 'flex';
       }
     }
@@ -2124,9 +3082,9 @@ const Settings = {
   },
 
   apply() {
-    ['pushNotifications','soundEffects','prizeAlerts','animationsEnabled','confettiEffects','showInLeaderboard','shareStats'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.checked = STATE.settings[id];
+    ['soundEffects','prizeAlerts','animationsEnabled','showInLeaderboard','shareStats'].forEach(id => {
+     const el = document.getElementById(id);
+     if (el) el.checked = STATE.settings[id];
     });
     const langEl = document.getElementById('currentLanguage');
     if (langEl) langEl.textContent = LANGUAGE_NAMES[STATE.settings.language] ?? 'English';
@@ -2146,9 +3104,12 @@ const Settings = {
       html.classList.remove('animations-disabled');
     }
     window.soundEnabled    = STATE.settings.soundEffects;
-    window.confettiEnabled = STATE.settings.confettiEffects;
   },
 
+  // Applies translations to every static [data-i18n] element AND
+  // re-renders the JS-generated bits (leaderboard tabs/labels, deposit
+  // package cards, inventory/prize modal state) so switching language
+  // updates everything currently on screen, not just the static markup.
   applyTranslations() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
@@ -2161,15 +3122,21 @@ const Settings = {
         } else { el.textContent = txt; }
       }
     });
+
+    Leaderboard.refreshLabels();
+    Deposit.refreshLabels();
+    if (document.getElementById('fullInventoryModal')?.classList.contains('show')) {
+      FullInventoryModal.render(STATE.currentFilter);
+    }
   },
 
   init() {
     this.load();
-    ['pushNotifications','soundEffects','prizeAlerts','animationsEnabled','confettiEffects','showInLeaderboard','shareStats'].forEach(id => {
+    ['soundEffects','prizeAlerts','animationsEnabled','showInLeaderboard','shareStats'].forEach(id => {
       document.getElementById(id)?.addEventListener('change', (e) => {
         STATE.settings[id] = e.target.checked;
         this.save(); this.applyEffects();
-        Utils.showToast('Setting saved');
+        Utils.showToast(Utils.t('settingSaved'));
       });
     });
     document.getElementById('languageSetting')?.addEventListener('click', () => LanguageModal.open());
@@ -2181,17 +3148,17 @@ const Settings = {
   },
 
   resetData() {
-    if (!confirm('⚠️ Delete ALL data? This cannot be undone.')) return;
-    if (prompt('Type "RESET" to confirm:') !== 'RESET') { alert('Reset cancelled.'); return; }
+    if (!confirm(Utils.t('confirmResetData'))) return;
+    if (prompt(Utils.t('confirmResetType')) !== 'RESET') { alert(Utils.t('resetCancelled')); return; }
     localStorage.clear();
     STATE.userCoins = 0; STATE.userStars = 0; STATE.inventoryItems = [];
     Currency.update(); Inventory.updateDisplay();
-    alert('All data reset!\nReloading…');
+    alert(Utils.t('allDataReset'));
     setTimeout(() => window.location.reload(), 1000);
   },
 
   clearCache() {
-    if (confirm('Clear cache?\n\nYour data will not be affected.')) Utils.showToast('Cache cleared');
+    if (confirm(Utils.t('confirmClearCache'))) Utils.showToast(Utils.t('cacheCleared'));
   }
 };
 
@@ -2226,7 +3193,7 @@ const LanguageModal = {
         if (langEl) langEl.textContent = LANGUAGE_NAMES[opt.dataset.lang];
         this.updateSelection();
         Settings.applyTranslations();
-        setTimeout(() => { this.close(); Utils.showToast('Language changed'); }, 300);
+        setTimeout(() => { this.close(); Utils.showToast(Utils.t('languageChanged')); }, 300);
       });
     });
   }
@@ -2248,19 +3215,19 @@ const Promocode = {
   submit() {
     const input = document.getElementById('promocodeInput');
     const code  = input?.value.trim().toUpperCase() ?? '';
-    if (!code) { this.showStatus('Please enter a promocode', 'error'); return; }
-    if (STATE.redeemedCodes.includes(code)) { this.showStatus('Code already redeemed', 'error'); return; }
+    if (!code) { this.showStatus(Utils.t('promoEnterCode'), 'error'); return; }
+    if (STATE.redeemedCodes.includes(code)) { this.showStatus(Utils.t('promoAlreadyRedeemed'), 'error'); return; }
     if (VALID_PROMOCODES[code]) {
       const promo = VALID_PROMOCODES[code];
       Currency.add(promo.coins);
       STATE.redeemedCodes.push(code);
       localStorage.setItem('redeemedCodes', JSON.stringify(STATE.redeemedCodes));
-      this.showStatus(`✓ ${promo.message} +${promo.coins} coins!`, 'success');
+      this.showStatus(Utils.t('promoRedeemed', { message: Utils.t(promo.messageKey), coins: promo.coins }), 'success');
       if (input) input.value = '';
       const btn = document.getElementById('promocodeSubmitBtn');
       if (btn) { btn.disabled = true; setTimeout(() => btn.disabled = false, 2000); }
     } else {
-      this.showStatus('Invalid promocode', 'error');
+      this.showStatus(Utils.t('promoInvalid'), 'error');
     }
   },
 
@@ -2393,10 +3360,10 @@ function checkForPaymentSuccess() {
   const amount = parseInt(starsToAdd, 10);
   if (isNaN(amount) || amount <= 0) { cleanupURLParams(); return; }
 
-  Utils.showToast(`Payment successful! Adding ${amount} stars…`, 'success');
+  Utils.showToast(Utils.t('paymentSuccessAdding', { n: amount }), 'success');
   setTimeout(async () => {
     await BackendAPI.syncBalance();
-    Utils.showToast(`${amount} stars added!`, 'success');
+    Utils.showToast(Utils.t('starsAdded', { n: amount }), 'success');
     cleanupURLParams();
   }, 2000);
 }
