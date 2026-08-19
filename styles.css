@@ -817,7 +817,7 @@ body.no-scroll{ position:fixed; overflow:hidden; width:100%; height:100%; }
 .package-buy-btn:hover{ transform:translateY(-2px); box-shadow:0 6px 18px rgba(124,92,250,.4); }
 
 .deposit-info-card{ display:flex; align-items:flex-start; gap:.8rem; padding:1rem; background:rgba(124,92,250,0.06); border:1px solid rgba(124,92,250,.2); border-radius:14px; }
-.info-icon{ width:18px; height:18px; flex-shrink:0; color:var(--rift-2); margin-top:.15rem; }
+.info-icon{ display:inline-block; width:18px; height:18px; flex-shrink:0; margin-top:.15rem; background-color:var(--rift-2); -webkit-mask-image:url('assets/Info.svg'); mask-image:url('assets/Info.svg'); -webkit-mask-size:contain; mask-size:contain; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-position:center; mask-position:center; }
 .info-content h3{ font-size:.8rem; font-weight:700; color:var(--rift-2); margin-bottom:.3rem; }
 .info-content p{ font-size:.72rem; color:var(--fog-dim); line-height:1.55; }
 
