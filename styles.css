@@ -800,7 +800,7 @@ body.no-scroll{ position:fixed; overflow:hidden; width:100%; height:100%; }
   flex-direction:column; align-items:center; gap:.45rem; position:relative; overflow:hidden; transition:all .3s ease; animation:scaleIn .4s ease backwards;
 }
 .package-card:hover{ transform:translateY(-3px); border-color:rgba(124,92,250,.4); box-shadow:0 8px 24px rgba(124,92,250,.18); }
-.popular-badge{ position:absolute; top:-8px; right:-8px; padding:.22rem .5rem; background:var(--static); border-radius:7px; font-size:.56rem; font-weight:700; color:#160a17; text-transform:uppercase; letter-spacing:.04em; z-index:2; }
+.popular-badge{ position:absolute; top:-3px; right:-3.5px; padding:.22rem .5rem; background:var(--static); border-radius:7px; font-size:.63rem; font-weight:700; color:#160a17; text-transform:uppercase; letter-spacing:.04em; z-index:2; }
 .package-icon{ width:38px; height:38px; display:flex; align-items:center; justify-content:center; }
 .package-icon img{ width:100%; height:100%; object-fit:contain; }
 .package-amount{ font-family:var(--font-display); font-size:1.35rem; font-weight:700; color:var(--ghost); line-height:1; }
