@@ -2308,8 +2308,28 @@ const Leaderboard = {
 
 const Deposit = {
   init() {
+    this.initTabs();
     this.renderPackages('stars');
     this.initIcons();
+  },
+
+  initTabs() {
+    const tabsContainer = document.querySelector('.deposit-tabs');
+    if (!tabsContainer || tabsContainer.dataset.bound) return;
+    tabsContainer.dataset.bound = 'true';
+
+    tabsContainer.addEventListener('click', (e) => {
+      const tab = e.target.closest('.deposit-tab');
+      if (!tab) return;
+
+      document.querySelectorAll('.deposit-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.deposit-list').forEach(l => l.classList.remove('active'));
+    
+      tab.classList.add('active');
+      const type = tab.dataset.tab;
+      STATE.currentDepositTab = type;
+      document.getElementById(`deposit-${type}`)?.classList.add('active');
+    });
   },
 
   renderPackages(type) {
