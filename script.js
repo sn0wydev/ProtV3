@@ -228,6 +228,14 @@ const DEPOSIT_PACKAGES = {
     { id: 'package_mega',         amount: 7500,  stars: 7500,  popular: false },
     { id: 'package_giant',        amount: 10000, stars: 10000, popular: false }
   ]
+  ton: [
+    { id: 'ton_tiny',   amount: 0.5, stars: 200,   popular: false },
+    { id: 'ton_small',  amount: 1,   stars: 400,   popular: false },
+    { id: 'ton_medium', amount: 3,   stars: 1200,  popular: true  },
+    { id: 'ton_large',  amount: 5,   stars: 2000,  popular: false },
+    { id: 'ton_xl',     amount: 10,  stars: 4000,  popular: false },
+    { id: 'ton_mega',   amount: 25,  stars: 10000, popular: false }
+  ]
 };
 
 // ============================================
@@ -2303,6 +2311,68 @@ const Leaderboard = {
 };
 
 // ============================================
+// TonWalletInit
+// ============================================
+
+const TonWallet = {
+  connector: null,
+  address: null,
+
+  init() {
+    if (!window.TonConnectSDK) { console.warn('TonConnect SDK not loaded'); return; }
+    this.connector = new window.TonConnectSDK.TonConnect({
+      manifestUrl: 'https://your-domain.com/tonconnect-manifest.json' // ← real host URL
+    });
+    this.connector.onStatusChange(wallet => {
+      this.address = wallet ? window.TonConnectSDK.toUserFriendlyAddress(wallet.account.address) : null;
+      this.updateUI();
+    });
+    this.connector.restoreConnection(); // picks up a session from a previous visit
+  },
+
+  async connect() {
+    if (!this.connector) return null;
+    if (this.connector.connected) return this.address;
+
+    const wallets = await this.connector.getWallets();
+    const tonSpace = wallets.find(w => w.appName === 'tonspace' && 'jsBridgeKey' in w);
+
+    if (tonSpace) {
+      this.connector.connect({ jsBridgeKey: tonSpace.jsBridgeKey });
+    } else {
+      const universal = wallets.find(w => 'universalLink' in w);
+      if (!universal) { Utils.showToast('No TON wallet found', 'error'); return null; }
+      const link = this.connector.connect({ universalLink: universal.universalLink, bridgeUrl: universal.bridgeUrl });
+      STATE.tg?.openLink ? STATE.tg.openLink(link) : window.open(link, '_blank');
+    }
+
+    return new Promise(resolve => {
+      const unsub = this.connector.onStatusChange(wallet => {
+        if (wallet) { unsub(); resolve(this.address); }
+      });
+    });
+  },
+
+  // Sends a plain TON transfer and returns the signed message's boc.
+  // NOTE: this is not proof of an on-chain confirmation — see backend note below.
+  async sendPayment(amountTon, merchantAddress) {
+    if (!this.connector?.connected) throw new Error('Wallet not connected');
+    const nanotons = Math.round(amountTon * 1e9).toString();
+    return this.connector.sendTransaction({
+      validUntil: Math.floor(Date.now() / 1000) + 300,
+      messages: [{ address: merchantAddress, amount: nanotons }]
+    });
+  },
+
+  updateUI() {
+    const btn = document.getElementById('tonConnectBtn');
+    if (!btn) return;
+    btn.textContent = this.address ? `${this.address.slice(0,4)}…${this.address.slice(-4)}` : Utils.t('connectWallet');
+    btn.classList.toggle('connected', !!this.address);
+  }
+};
+
+// ============================================
 // DEPOSIT
 // ============================================
 
@@ -2311,6 +2381,7 @@ const Deposit = {
     this.initTabs();
     this.renderPackages('stars');
     this.initIcons();
+    document.getElementById('tonConnectBtn')?.addEventListener('click', () => TonWallet.connect());
   },
 
   initTabs() {
@@ -2352,10 +2423,18 @@ const Deposit = {
     const icon = document.createElement('div');
     icon.className = 'package-icon';
     icon.id = `pkg-${type}-${index}`;
+    if (type === 'ton') {
+      const img = Object.assign(document.createElement('img'), { src: 'assets/TON.svg', alt: 'TON' })
+      img.style.cssText = 'width:100%;height:100%;object-fit:contain';
+      icon.appendChild(img);
+    }
     card.appendChild(icon);
 
     const amt = Object.assign(document.createElement('div'), { className: 'package-amount', textContent: pkg.amount.toLocaleString() });
-    const cur = Object.assign(document.createElement('div'), { className: 'package-currency', textContent: Utils.t('starsWord') });
+    const cur = Object.assign(document.createElement('div'), {
+      className: 'package-currency',
+      textContent: type === 'ton' ? 'TON' : Utils.t('starsWord')
+    });
     const div = document.createElement('div'); div.className = 'package-divider';
 
     const coins = document.createElement('div'); coins.className = 'package-coins';
@@ -2368,7 +2447,9 @@ const Deposit = {
     return card;
   },
 
-  async purchasePackage(pkg) {
+  async purchasePackage(pkg, type) {
+    if (type === 'ton') return this.purchaseWithTon(pkg);
+    
     if (!STATE.tg) { Utils.showToast(Utils.t('telegramWebAppUnavailable'), 'error'); return; }
     const userId = STATE.tg.initDataUnsafe?.user?.id;
     if (!userId)  { Utils.showToast(Utils.t('userIdUnavailable'), 'error'); return; }
@@ -2400,6 +2481,35 @@ const Deposit = {
     }
   },
 
+  async purchaseWithTon(pkg) {
+    const userId = STATE.tg?.initDataUnsafe?.user?.id;
+    if (!userId) { Utils.showToast(Utils.t('userIdUnavailable'), 'error'); return; }
+
+    if (!TonWallet.connector?.connected) {
+      const addr = await TonWallet.connect();
+      if (!addr) return;
+    }
+
+    const MERCHANT_WALLET = process.env.MERCHANT_WALLET;
+    const reference = Utils.generatePrizeId();
+
+    try {
+      await fetch('https://vgtserver-production.up.railway.app/ton/create-pending', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, reference, amountTon: pkg.amount, starsOwed: pkg.stars, walletAddress: TonWallet.address })
+      });
+
+      Utils.showToast(Utils.t('creatingInvoice'), 'success');
+      await TonWallet.sendPayment(pkg.amount, MERCHANT_WALLET);
+      Utils.showToast(Utils.t('paymentSuccessAdding', { n: pkg.stars }), 'success');
+      setTimeout(() => BackendAPI.syncBalance(), 4000); // Stars only appear once backend confirms
+    } catch (err) {
+      if (String(err.message).toLowerCase().includes('reject')) Utils.showToast(Utils.t('paymentCancelled'), 'error');
+      else Utils.showToast(Utils.t('invoiceError', { msg: err.message }), 'error');
+    }
+  },
+  
   initIcons() {
     setTimeout(() => {
       const starsTabEl = document.getElementById('starsTabIcon');
@@ -3417,6 +3527,7 @@ async function initializeApp() {
 
   BackendAPI.syncBalance().then(() => Currency.update());
   Inventory.updateDisplay();
+  TonWallet.init()
 
   startWheels();
 }
