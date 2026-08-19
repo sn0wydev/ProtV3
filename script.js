@@ -227,7 +227,8 @@ const DEPOSIT_PACKAGES = {
     { id: 'package_xlsize',       amount: 5000,  stars: 5000,  popular: true  },
     { id: 'package_mega',         amount: 7500,  stars: 7500,  popular: false },
     { id: 'package_giant',        amount: 10000, stars: 10000, popular: false }
-  ]
+  ],
+  
   ton: [
     { id: 'ton_tiny',   amount: 0.5, stars: 200,   popular: false },
     { id: 'ton_small',  amount: 1,   stars: 400,   popular: false },
