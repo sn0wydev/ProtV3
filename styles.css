@@ -393,10 +393,10 @@ body.no-scroll{ position:fixed; overflow:hidden; width:100%; height:100%; }
 .tile:active{ transform:scale(.95); }
 .tile:hover{ border-color:var(--void-line-2); }
 .tile-icon{ width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; }
-.tile-icon img, .tile-icon svg{ width:18px; height:18px; object-fit:contain; }
+.tile-icon img, .tile-icon svg{ width:30px; height:30px; object-fit:contain; }
 .tile-label{ font-size:.68rem; font-weight:600; color:var(--fog); line-height:1.2; }
-.tile--contact .tile-icon{ background:rgba(69,214,224,0.12); color:var(--signal); }
-.tile--refer .tile-icon{ background:rgba(240,168,96,0.12); color:var(--ember); }
+.tile--contact .tile-icon{ background:transparent; color:var(--signal); }
+.tile--refer .tile-icon{ background:transparent; color:var(--ember); }
 
 /* ============================================
    NOTIFICATION CUBES (live echo strip)
