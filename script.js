@@ -474,6 +474,10 @@ const TRANSLATIONS = {
     giftSentPopupTitle: 'Gift Sent!',
     giftSentPopupMessage: 'Your {name} gift has been sent to your Telegram account!',
     claimFailedPopupTitle: 'Claim Failed',
+    connectWallet: 'Connect Wallet',
+    chooseWallet: 'Choose a Wallet',
+    noWalletFound: 'No wallet found',
+    walletNotConnectedWarning: '⚠️ Connect a wallet to purchase with TON',
 
     promoEnterCode: 'Please enter a promocode',
     promoAlreadyRedeemed: 'Code already redeemed',
@@ -2312,6 +2316,72 @@ const Leaderboard = {
 };
 
 // ============================================
+// WALLETPICKER
+// ============================================
+const WalletPickerModal = {
+  _resolve: null,
+
+  _hide() {
+    document.getElementById('walletPickerModal')?.classList.remove('show');
+  },
+
+  // Returns a Promise resolving to the chosen wallet object, or null if cancelled.
+  open(wallets) {
+    const modal = document.getElementById('walletPickerModal');
+    const list  = document.getElementById('walletPickerList');
+    if (!modal || !list || !wallets.length) return Promise.resolve(null);
+
+    list.innerHTML = '';
+    wallets.forEach(w => {
+      const opt = document.createElement('div');
+      opt.className = 'language-option';
+
+      const icon = document.createElement('span');
+      icon.className = 'language-flag';
+      if (w.imageUrl) {
+        const img = document.createElement('img');
+        img.src = w.imageUrl;
+        img.alt = w.name || '';
+        img.style.cssText = 'width:28px;height:28px;object-fit:contain;border-radius:6px;';
+        icon.appendChild(img);
+      } else {
+        icon.textContent = '💼';
+      }
+
+      const name = document.createElement('span');
+      name.className = 'language-name';
+      name.textContent = w.name || w.appName;
+
+      opt.append(icon, name);
+      opt.addEventListener('click', () => {
+        this._hide();
+        const resolve = this._resolve;
+        this._resolve = null;
+        resolve?.(w);
+      });
+      list.appendChild(opt);
+    });
+
+    modal.classList.add('show');
+    return new Promise(resolve => { this._resolve = resolve; });
+  },
+
+  close() {
+    this._hide();
+    const resolve = this._resolve;
+    this._resolve = null;
+    resolve?.(null);
+  },
+
+  init() {
+    document.getElementById('walletPickerClose')?.addEventListener('click', () => this.close());
+    document.getElementById('walletPickerModal')?.addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) this.close();
+    });
+  }
+};
+
+// ============================================
 // TonWalletInit
 // ============================================
 
@@ -2336,15 +2406,19 @@ const TonWallet = {
     if (this.connector.connected) return this.address;
 
     const wallets = await this.connector.getWallets();
-    const tonSpace = wallets.find(w => w.appName === 'tonspace' && 'jsBridgeKey' in w);
+    if (!wallets.length) { Utils.showToast(Utils.t('noWalletFound'), 'error'); return null; }
 
-    if (tonSpace) {
-      this.connector.connect({ jsBridgeKey: tonSpace.jsBridgeKey });
-    } else {
-      const universal = wallets.find(w => 'universalLink' in w);
-      if (!universal) { Utils.showToast('No TON wallet found', 'error'); return null; }
-      const link = this.connector.connect({ universalLink: universal.universalLink, bridgeUrl: universal.bridgeUrl });
+    const chosen = await WalletPickerModal.open(wallets);
+    if (!chosen) return null;
+
+    if ('jsBridgeKey' in chosen) {
+      this.connector.connect({ jsBridgeKey: chosen.jsBridgeKey });
+    } else if ('universalLink' in chosen) {
+      const link = this.connector.connect({ universalLink: chosen.universalLink, bridgeUrl: chosen.bridgeUrl });
       STATE.tg?.openLink ? STATE.tg.openLink(link) : window.open(link, '_blank');
+    } else {
+      Utils.showToast(Utils.t('noWalletFound'), 'error');
+      return null;
     }
 
     return new Promise(resolve => {
@@ -2374,9 +2448,12 @@ const TonWallet = {
 
   updateUI() {
     const btn = document.getElementById('tonConnectBtn');
-    if (!btn) return;
-    btn.textContent = this.address ? `${this.address.slice(0,4)}…${this.address.slice(-4)}` : Utils.t('connectWallet');
-    btn.classList.toggle('connected', !!this.address);
+    const warning = document.getElementById('tonWalletWarning');
+    if (btn) {
+      btn.textContent = this.address ? `${this.address.slice(0,4)}…${this.address.slice(-4)}` : Utils.t('connectWallet');
+      btn.classList.toggle('connected', !!this.address);
+    }
+    if (warning) warning.classList.toggle('hidden', !!this.address);
   }
 };
 
@@ -3530,6 +3607,7 @@ async function initializeApp() {
   BottomNav.init();
   Settings.init();
   LanguageModal.init();
+  WalletPickerModal.init();
   ContentBoxes.init();
   EventListeners.init();
 
