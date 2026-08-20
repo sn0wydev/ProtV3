@@ -820,6 +820,12 @@ body.no-scroll{ position:fixed; overflow:hidden; width:100%; height:100%; }
 .info-icon{ display:inline-block; width:18px; height:18px; flex-shrink:0; margin-top:.15rem; background-color:var(--rift-2); -webkit-mask-image:url('assets/Info.svg'); mask-image:url('assets/Info.svg'); -webkit-mask-size:contain; mask-size:contain; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-position:center; mask-position:center; }
 .info-content h3{ font-size:.8rem; font-weight:700; color:var(--rift-2); margin-bottom:.3rem; }
 .info-content p{ font-size:.72rem; color:var(--fog-dim); line-height:1.55; }
+.ton-wallet-warning{
+  font-size:.72rem; color:var(--ember); background:rgba(240,168,96,0.08);
+  border:1px solid rgba(240,168,96,0.25); border-radius:10px;
+  padding:.6rem .9rem; margin:.6rem 0 .9rem; text-align:center; font-family:var(--font-mono);
+}
+.ton-wallet-warning.hidden{ display:none; }
 
 /* ============================================
    SETTINGS PAGE — v2 compact style
