@@ -2388,6 +2388,7 @@ const Deposit = {
   init() {
     this.initTabs();
     this.renderPackages('stars');
+    this.renderPackages('ton');
     this.initIcons();
     document.getElementById('tonConnectBtn')?.addEventListener('click', () => TonWallet.connect());
   },
