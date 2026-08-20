@@ -2322,7 +2322,7 @@ const TonWallet = {
   init() {
     if (!window.TonConnectSDK) { console.warn('TonConnect SDK not loaded'); return; }
     this.connector = new window.TonConnectSDK.TonConnect({
-      manifestUrl: 'https://your-domain.com/tonconnect-manifest.json' // ← real host URL
+      manifestUrl: 'https://sn0wydev.github.io/ProtV3/tonconnect-manifest.json' // ← real host URL
     });
     this.connector.onStatusChange(wallet => {
       this.address = wallet ? window.TonConnectSDK.toUserFriendlyAddress(wallet.account.address) : null;
@@ -2356,12 +2356,19 @@ const TonWallet = {
 
   // Sends a plain TON transfer and returns the signed message's boc.
   // NOTE: this is not proof of an on-chain confirmation — see backend note below.
-  async sendPayment(amountTon, merchantAddress) {
+  async sendPayment(amountTon, merchantAddress, comment) {
     if (!this.connector?.connected) throw new Error('Wallet not connected');
     const nanotons = Math.round(amountTon * 1e9).toString();
+    const message = { address: merchantAddress, amount: nanotons };
+    if (comment) {
+      const bytes = new TextEncoder().encode(comment);
+      const cell = new Uint8Array(4 + bytes.length);
+      cell.set(bytes, 4);
+      message.payload = btoa(String.fromCharCode(...cell));
+    }
     return this.connector.sendTransaction({
       validUntil: Math.floor(Date.now() / 1000) + 300,
-      messages: [{ address: merchantAddress, amount: nanotons }]
+      messages: [message]
     });
   },
 
@@ -2491,20 +2498,19 @@ const Deposit = {
       if (!addr) return;
     }
 
-    const MERCHANT_WALLET = process.env.MERCHANT_WALLET;
-    const reference = Utils.generatePrizeId();
-
     try {
-      await fetch('https://vgtserver-production.up.railway.app/ton/create-pending', {
+      Utils.showToast(Utils.t('creatingInvoice'), 'success');
+      const res = await fetch('https://vgtserver-production.up.railway.app/ton/create-pending', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, reference, amountTon: pkg.amount, starsOwed: pkg.stars, walletAddress: TonWallet.address })
+        body: JSON.stringify({ userId, productId: pkg.id, walletAddress: TonWallet.address })
       });
+      if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to create pending payment'); }
+      const { reference, merchantWallet, amountTon } = await res.json();
+      await TonWallet.sendPayment(amountTon, merchantWallet, reference);
 
-      Utils.showToast(Utils.t('creatingInvoice'), 'success');
-      await TonWallet.sendPayment(pkg.amount, MERCHANT_WALLET);
       Utils.showToast(Utils.t('paymentSuccessAdding', { n: pkg.stars }), 'success');
-      setTimeout(() => BackendAPI.syncBalance(), 4000); // Stars only appear once backend confirms
+      setTimeout(() => BackendAPI.syncBalance(), 4000);
     } catch (err) {
       if (String(err.message).toLowerCase().includes('reject')) Utils.showToast(Utils.t('paymentCancelled'), 'error');
       else Utils.showToast(Utils.t('invoiceError', { msg: err.message }), 'error');
