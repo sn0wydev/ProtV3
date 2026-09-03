@@ -1406,6 +1406,10 @@ const Utils = {
 // broken status endpoint never blocks a working app.
 // ============================================
 
+// Standalone TON on-chain payment backend (ton-payments.js). Fully
+// independent of vgtserver (gift transactor) and vgservers (Stars invoices).
+const TON_API_BASE = 'https://REPLACE_WITH_YOUR_TON_BACKEND_DOMAIN.up.railway.app';
+
 const STATUS_CONFIG = {
   URL: 'https://raw.githubusercontent.com/sn0wydev/ProtV3/main/status.json',
   TIMEOUT_MS: 4000
@@ -1476,6 +1480,25 @@ const BackendAPI = {
   async getUserStars()   { return this._cloudGet('userStars', STATE.userStars); },
   async saveUserStars(v) { return this._cloudSet('userStars', v); },
 
+  // ── TON payments (ton-payments.js confirms on-chain transfers async via
+  // polling, then holds an unclaimed credit — nothing is pushed to the
+  // client, so this has to be pulled explicitly) ──
+
+  async claimTonCredits() {
+    const userId = STATE.tg?.initDataUnsafe?.user?.id;
+    if (!userId) return 0;
+    try {
+      const res = await fetch(`${TON_API_BASE}/ton/claim-credits/${userId}`);
+      if (!res.ok) return 0;
+      const data = await res.json();
+      if (data.stars > 0) Currency.addStars(data.stars);
+      return data.stars || 0;
+    } catch (err) {
+      console.error('❌ claimTonCredits failed:', err);
+      return 0;
+    }
+  },
+
   // ── Sync both ──
 
   async syncBalance() {
@@ -1491,6 +1514,10 @@ const BackendAPI = {
 
     STATE.lastBalanceSync = Date.now();
     STATE.isSyncing = false;
+
+    // Safety net: picks up any TON credit that got confirmed after the
+    // purchase flow stopped waiting (app closed, tab backgrounded, etc).
+    this.claimTonCredits();
   },
 
   startPeriodicSync() {
@@ -2629,22 +2656,57 @@ const Deposit = {
     }
 
     try {
-      Utils.showToast(Utils.t('creatingInvoice'), 'success');
-      const res = await fetch('https://vgtserver-production.up.railway.app/ton/create-pending', {
+      Utils.showToast(Utils.t('processingTonPayment'), 'success');
+      const res = await fetch(`${TON_API_BASE}/ton/create-pending`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, productId: pkg.id, walletAddress: TonWallet.address })
       });
       if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to create pending payment'); }
       const { reference, merchantWallet, amountTon } = await res.json();
+
+      // This only resolves once the wallet has signed and broadcast the
+      // transfer — it is NOT on-chain confirmation. ton-payments.js only
+      // credits Stars after its poller actually sees the transaction land
+      // on the merchant wallet (every ~12s), so we still have to wait.
       await TonWallet.sendPayment(amountTon, merchantWallet, reference);
 
-      Utils.showToast(Utils.t('paymentSuccessAdding', { n: pkg.stars }), 'success');
-      setTimeout(() => BackendAPI.syncBalance(), 4000);
+      Utils.showToast(Utils.t('waitingTonConfirmation'), 'success');
+      const confirmed = await this.waitForTonConfirmation(reference);
+
+      if (confirmed) {
+        const stars = await BackendAPI.claimTonCredits();
+        Utils.showToast(Utils.t('paymentSuccessAdding', { n: stars || pkg.stars }), 'success');
+      } else {
+        // Not confirmed within our polling window — doesn't mean it failed.
+        // The backend keeps watching for PENDING_EXPIRY_MS (30 min) and
+        // syncBalance()'s periodic claimTonCredits() will pick it up
+        // automatically once it lands, without the user needing to do anything.
+        Utils.showToast(Utils.t('tonConfirmationPending'), 'success');
+      }
     } catch (err) {
       if (String(err.message).toLowerCase().includes('reject')) Utils.showToast(Utils.t('paymentCancelled'), 'error');
       else Utils.showToast(Utils.t('invoiceError', { msg: err.message }), 'error');
     }
+  },
+
+  // Polls GET /ton/status/:reference until the backend's on-chain watcher
+  // confirms the transfer (or the payment expires). Returns false on
+  // timeout — that's a "still waiting" outcome, not a failure.
+  async waitForTonConfirmation(reference, { intervalMs = 4000, timeoutMs = 90000 } = {}) {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      try {
+        const res = await fetch(`${TON_API_BASE}/ton/status/${reference}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === 'confirmed') return true;
+          if (data.status === 'expired') return false;
+        }
+      } catch { /* transient network hiccup — just retry next tick */ }
+      await new Promise(r => setTimeout(r, intervalMs));
+    }
+    return false;
   },
   
   initIcons() {
