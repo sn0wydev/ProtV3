@@ -2455,12 +2455,25 @@ const TonWallet = {
     const chosen = await WalletPickerModal.open(wallets);
     if (!chosen) return null;
 
-    if ('jsBridgeKey' in chosen) {
-      this.connector.connect({ jsBridgeKey: chosen.jsBridgeKey });
-    } else if ('universalLink' in chosen) {
-      const link = this.connector.connect({ universalLink: chosen.universalLink, bridgeUrl: chosen.bridgeUrl });
-      STATE.tg?.openLink ? STATE.tg.openLink(link) : window.open(link, '_blank');
-    } else {
+    try {
+      // A wallet advertising `jsBridgeKey` only means it *supports* a browser-extension
+      // bridge on some platform — not that the extension is installed in THIS browser.
+      // Tonkeeper is mostly a mobile app / deep link, so it has jsBridgeKey but
+      // injected/embedded is false. Only take the bridge path when the extension is
+      // actually live right now; otherwise fall back to the universal link.
+      const isInjected = 'jsBridgeKey' in chosen && (chosen.injected || chosen.embedded);
+
+      if (isInjected) {
+        await this.connector.connect({ jsBridgeKey: chosen.jsBridgeKey });
+      } else if ('universalLink' in chosen) {
+        const link = this.connector.connect({ universalLink: chosen.universalLink, bridgeUrl: chosen.bridgeUrl });
+        STATE.tg?.openLink ? STATE.tg.openLink(link) : window.open(link, '_blank');
+      } else {
+        Utils.showToast(Utils.t('noWalletFound'), 'error');
+        return null;
+      }
+    } catch (err) {
+      console.error('TonWallet.connect failed:', err);
       Utils.showToast(Utils.t('noWalletFound'), 'error');
       return null;
     }
