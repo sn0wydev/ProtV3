@@ -2385,6 +2385,50 @@ const WalletPickerModal = {
 // TonWalletInit
 // ============================================
 
+// Builds a valid base64 BOC (Bag of Cells) for a plain-text TON transfer
+// comment: a single ordinary cell containing a 32-bit zero opcode followed
+// by the UTF-8 comment bytes, per the TON/TonConnect "text comment" format
+// (docs.ton.org/v3/guidelines/ton-connect/guidelines/preparing-messages).
+// Previously this repo base64-encoded raw bytes with no BOC framing, which
+// wallets either rejected or silently dropped — meaning the reference
+// comment never reached the chain and ton-payments.js could never match
+// the deposit. Keep comments short (well under ~240 bytes) so the whole
+// BOC still fits the 1-byte size/offset fields used below.
+function buildCommentBoc(comment) {
+  const textBytes = new TextEncoder().encode(comment);
+  const n = textBytes.length;
+  const dataLen = 4 + n; // 4 zero bytes (opcode) + comment bytes
+
+  const d1 = 0x00;            // 0 refs, ordinary cell, level 0
+  const d2 = dataLen * 2;     // byte-aligned data
+
+  const cellBytes = new Uint8Array(2 + dataLen);
+  cellBytes[0] = d1;
+  cellBytes[1] = d2;
+  cellBytes.set(textBytes, 2 + 4);
+
+  const totCellsSize = cellBytes.length;
+
+  const header = new Uint8Array([
+    0xb5, 0xee, 0x9c, 0x72, // BOC magic
+    0x01,                   // flags: size_bytes = 1
+    0x01,                   // off_bytes = 1
+    0x01,                   // cells_count
+    0x01,                   // roots_count
+    0x00,                   // absent_count
+    totCellsSize,           // tot_cells_size
+    0x00                    // root_list[0] = cell index 0
+  ]);
+
+  const boc = new Uint8Array(header.length + cellBytes.length);
+  boc.set(header, 0);
+  boc.set(cellBytes, header.length);
+
+  let binary = '';
+  boc.forEach(b => { binary += String.fromCharCode(b); });
+  return btoa(binary);
+}
+
 const TonWallet = {
   connector: null,
   address: null,
@@ -2434,12 +2478,7 @@ const TonWallet = {
     if (!this.connector?.connected) throw new Error('Wallet not connected');
     const nanotons = Math.round(amountTon * 1e9).toString();
     const message = { address: merchantAddress, amount: nanotons };
-    if (comment) {
-      const bytes = new TextEncoder().encode(comment);
-      const cell = new Uint8Array(4 + bytes.length);
-      cell.set(bytes, 4);
-      message.payload = btoa(String.fromCharCode(...cell));
-    }
+    if (comment) message.payload = buildCommentBoc(comment);
     return this.connector.sendTransaction({
       validUntil: Math.floor(Date.now() / 1000) + 300,
       messages: [message]
