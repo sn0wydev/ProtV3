@@ -2478,17 +2478,44 @@ function buildCommentBoc(comment) {
 const TonWallet = {
   connector: null,
   address: null,
+  // Metadata about the connected wallet app itself (name/icon/deep link) —
+  // not part of the TonConnect session object, so we capture it ourselves
+  // at connect time and persist it for restoreConnection() on reload.
+  meta: null,
 
   init() {
     if (!window.TonConnectSDK) { console.warn('TonConnect SDK not loaded'); return; }
     this.connector = new window.TonConnectSDK.TonConnect({
       manifestUrl: 'https://sn0wydev.github.io/ProtV3/tonconnect-manifest.json' // ← real host URL
     });
-    this.connector.onStatusChange(wallet => {
+    try { this.meta = JSON.parse(localStorage.getItem('tonWalletMeta') || 'null'); } catch { this.meta = null; }
+
+    this.connector.onStatusChange(async wallet => {
       this.address = wallet ? window.TonConnectSDK.toUserFriendlyAddress(wallet.account.address) : null;
+      if (!wallet) { this.meta = null; localStorage.removeItem('tonWalletMeta'); }
+      else if (!this.meta) { await this._resolveMeta(wallet); } // e.g. restored session on a fresh page load
       this.updateUI();
     });
     this.connector.restoreConnection(); // picks up a session from a previous visit
+  },
+
+  // Backfills wallet app name/icon/deepLink by matching the session's
+  // device.appName against the public wallets list — needed after
+  // restoreConnection(), since the reconnect path never goes through
+  // WalletPickerModal where we'd normally capture this directly.
+  async _resolveMeta(wallet) {
+    try {
+      const appName = wallet?.device?.appName;
+      if (!appName) return;
+      const wallets = await this.connector.getWallets();
+      const match = wallets.find(w => (w.appName || '').toLowerCase() === appName.toLowerCase());
+      if (match) this._saveMeta(match);
+    } catch (err) { console.error('TonWallet._resolveMeta failed:', err); }
+  },
+
+  _saveMeta(chosen) {
+    this.meta = { name: chosen.name || chosen.appName, imageUrl: chosen.imageUrl || null, deepLink: chosen.deepLink || null };
+    try { localStorage.setItem('tonWalletMeta', JSON.stringify(this.meta)); } catch { /* storage full/unavailable — non-fatal */ }
   },
 
   async connect() {
@@ -2501,6 +2528,27 @@ const TonWallet = {
     const chosen = await WalletPickerModal.open(wallets);
     if (!chosen) return null;
 
+    return this._connectToWallet(chosen);
+  },
+
+  // Lets the user pick a different wallet WITHOUT touching the current
+  // connection until a replacement is actually confirmed. Previously this
+  // disconnected first, so cancelling the picker left the user with no
+  // wallet connected at all — fixed by only swapping after a real choice.
+  async switchWallet() {
+    if (!this.connector) return null;
+
+    const wallets = await this.connector.getWallets();
+    if (!wallets.length) { Utils.showToast(Utils.t('noWalletFound'), 'error'); return this.address; }
+
+    const chosen = await WalletPickerModal.open(wallets);
+    if (!chosen) return this.address; // cancelled — keep whatever was connected, nothing lost
+
+    if (this.connector.connected) await this.disconnect();
+    return this._connectToWallet(chosen);
+  },
+
+  async _connectToWallet(chosen) {
     try {
       // A wallet advertising `jsBridgeKey` only means it *supports* a browser-extension
       // bridge on some platform — not that the extension is installed in THIS browser.
@@ -2512,7 +2560,7 @@ const TonWallet = {
       if (isInjected) {
         await this.connector.connect({ jsBridgeKey: chosen.jsBridgeKey });
       } else if ('universalLink' in chosen) {
-        const link = this.connector.connect({ universalLink: chosen.universalLink, bridgeUrl: chosen.bridgeUrl });
+        const link = this._withReturnStrategy(this.connector.connect({ universalLink: chosen.universalLink, bridgeUrl: chosen.bridgeUrl }));
         STATE.tg?.openLink ? STATE.tg.openLink(link) : window.open(link, '_blank');
       } else {
         Utils.showToast(Utils.t('noWalletFound'), 'error');
@@ -2523,6 +2571,8 @@ const TonWallet = {
       Utils.showToast(Utils.t('noWalletFound'), 'error');
       return null;
     }
+
+    this._saveMeta(chosen);
 
     return new Promise(resolve => {
       let settled = false;
@@ -2537,6 +2587,19 @@ const TonWallet = {
     });
   },
 
+  // Best-effort: asks the wallet to return the user straight back here
+  // after they approve/decline, instead of leaving them stranded in the
+  // wallet app. Only meaningful inside Telegram; support varies by wallet
+  // (this is a protocol-level hint, not a guarantee — see ton-connect/sdk#302).
+  _withReturnStrategy(link) {
+    if (!STATE.tg) return link;
+    try {
+      const u = new URL(link);
+      u.searchParams.set('ret', 'back');
+      return u.toString();
+    } catch { return link; }
+  },
+
   // Sends a plain TON transfer and returns the signed message's boc.
   // NOTE: this is not proof of an on-chain confirmation — see backend note below.
   async sendPayment(amountTon, merchantAddress, comment) {
@@ -2544,6 +2607,16 @@ const TonWallet = {
     const nanotons = Math.round(amountTon * 1e9).toString();
     const message = { address: merchantAddress, amount: nanotons };
     if (comment) message.payload = buildCommentBoc(comment);
+
+    // The confirmation screen itself can never be embedded in our page —
+    // by design, only the wallet (which holds the private key) is allowed
+    // to render that UI, otherwise a malicious page could fake a "Confirm"
+    // button. What we CAN do is bring the wallet app to the foreground
+    // immediately instead of waiting on a push notification to wake it.
+    if (STATE.tg && this.meta?.deepLink) {
+      try { STATE.tg.openLink(this.meta.deepLink); } catch { /* non-fatal — bridge push still covers it */ }
+    }
+
     return this.connector.sendTransaction({
       validUntil: Math.floor(Date.now() / 1000) + 300,
       messages: [message]
@@ -2581,6 +2654,24 @@ const TonWalletManage = {
     if (!TonWallet.address) { modal.classList.remove('show'); return; }
 
     body.innerHTML = '';
+
+    const header = document.createElement('div');
+    header.className = 'ton-wallet-manage-header';
+
+    const icon = document.createElement('div');
+    icon.className = 'ton-wallet-manage-icon';
+    const iconSrc = TonWallet.meta?.imageUrl || 'assets/TON.svg'; // same icon used for the TON deposit tab
+    icon.innerHTML = `<img src="${iconSrc}" alt="">`;
+
+    const name = document.createElement('div');
+    name.className = 'ton-wallet-manage-name';
+    name.textContent = TonWallet.meta?.name || 'TON Wallet';
+
+    header.append(icon, name);
+
+    const divider = document.createElement('div');
+    divider.className = 'ton-purchase-divider';
+
     const pill = document.createElement('div');
     pill.className = 'ton-wallet-address-pill';
     pill.textContent = TonWallet.address;
@@ -2594,7 +2685,7 @@ const TonWalletManage = {
       Utils.showToast(Utils.t('disconnected'), 'success');
     });
 
-    body.append(pill, disconnectBtn);
+    body.append(header, divider, pill, disconnectBtn);
     modal.classList.add('show');
   },
 
@@ -2691,10 +2782,8 @@ const TonPurchaseFlow = {
       switchBtn.className = 'ton-purchase-btn secondary';
       switchBtn.textContent = Utils.t('useAnotherWallet');
       switchBtn.addEventListener('click', async () => {
-        await TonWallet.disconnect();
-        const addr = await TonWallet.connect();
-        if (addr) this._runPayment();
-        else this._renderChooseWallet();
+        await TonWallet.switchWallet(); // only swaps if the user actually picks a new wallet — cancelling keeps the current one connected
+        this._renderChooseWallet(); // re-render to reflect whichever wallet ends up connected
       });
 
       this._body().append(payBtn, switchBtn);
