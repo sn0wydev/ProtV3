@@ -478,6 +478,25 @@ const TRANSLATIONS = {
     chooseWallet: 'Choose a Wallet',
     noWalletFound: 'No wallet found',
     walletNotConnectedWarning: '⚠️ Connect a wallet to purchase with TON',
+    walletNotConnected: 'Not connected',
+    walletConnected: 'Wallet Connected',
+    tonPurchaseTitle: 'Purchase with TON',
+    payWithWallet: 'Pay with this wallet',
+    useAnotherWallet: 'Use another wallet',
+    connectAWallet: 'Connect a Wallet',
+    connectingWallet: 'Waiting for wallet connection…',
+    confirmInWalletApp: 'Confirm the payment in your wallet app…',
+    waitingTonConfirmation: 'Waiting for on-chain confirmation…',
+    tonPaymentSuccessTitle: 'Payment Confirmed',
+    tonPaymentSuccessDesc: '{n} stars have been added to your balance.',
+    tonPaymentFailedTitle: 'Payment Failed',
+    tonConfirmationPendingTitle: 'Still Confirming',
+    tonConfirmationPendingDesc: "This can take a few minutes on-chain. Your stars will be added automatically once it's confirmed — no need to keep this open.",
+    done: 'Done',
+    close: 'Close',
+    tryAgain: 'Try Again',
+    disconnectWallet: 'Disconnect Wallet',
+    disconnected: 'Wallet disconnected',
 
     promoEnterCode: 'Please enter a promocode',
     promoAlreadyRedeemed: 'Code already redeemed',
@@ -2525,14 +2544,233 @@ const TonWallet = {
     });
   },
 
+  // Manual disconnect, triggered from the wallet-manage modal. onStatusChange
+  // fires from this too, so UI updates through the normal path.
+  async disconnect() {
+    if (!this.connector?.connected) return;
+    try { await this.connector.disconnect(); }
+    catch (err) { console.error('TonWallet.disconnect failed:', err); }
+  },
+
   updateUI() {
-    const btn = document.getElementById('tonConnectBtn');
-    const warning = document.getElementById('tonWalletWarning');
-    if (btn) {
-      btn.textContent = this.address ? `${this.address.slice(0,4)}…${this.address.slice(-4)}` : Utils.t('connectWallet');
-      btn.classList.toggle('connected', !!this.address);
+    const chip = document.getElementById('tonWalletChip');
+    const label = document.getElementById('tonWalletChipLabel');
+    if (chip) chip.classList.toggle('connected', !!this.address);
+    if (label) label.textContent = this.address
+      ? `${this.address.slice(0, 4)}…${this.address.slice(-4)}`
+      : Utils.t('walletNotConnected');
+  }
+};
+
+// ============================================
+// TON WALLET MANAGE (chip -> address + disconnect)
+// ============================================
+
+const TonWalletManage = {
+  open() {
+    const modal = document.getElementById('tonWalletManageModal');
+    const body = document.getElementById('tonWalletManageBody');
+    if (!modal || !body) return;
+
+    if (!TonWallet.address) { modal.classList.remove('show'); return; }
+
+    body.innerHTML = '';
+    const pill = document.createElement('div');
+    pill.className = 'ton-wallet-address-pill';
+    pill.textContent = TonWallet.address;
+
+    const disconnectBtn = document.createElement('button');
+    disconnectBtn.className = 'ton-purchase-btn danger';
+    disconnectBtn.textContent = Utils.t('disconnectWallet');
+    disconnectBtn.addEventListener('click', async () => {
+      await TonWallet.disconnect();
+      modal.classList.remove('show');
+      Utils.showToast(Utils.t('disconnected'), 'success');
+    });
+
+    body.append(pill, disconnectBtn);
+    modal.classList.add('show');
+  },
+
+  init() {
+    document.getElementById('tonWalletChip')?.addEventListener('click', () => {
+      if (TonWallet.address) this.open();
+      // Not connected: the chip is just a status indicator — connecting
+      // happens through the purchase flow, per design.
+    });
+    document.getElementById('tonWalletManageClose')?.addEventListener('click', () => {
+      document.getElementById('tonWalletManageModal')?.classList.remove('show');
+    });
+    document.getElementById('tonWalletManageModal')?.addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+    });
+  }
+};
+
+// ============================================
+// TON PURCHASE FLOW
+// A single guided modal: choose/connect a wallet -> pay -> wait for
+// on-chain confirmation -> success/fail screen. Replaces the old flow
+// where pressing Purchase gave no feedback until the wallet app popped up.
+// ============================================
+
+const TonPurchaseFlow = {
+  _pkg: null,
+  _closable: true,
+
+  _modal()  { return document.getElementById('tonPurchaseModal'); },
+  _body()   { return document.getElementById('tonPurchaseBody'); },
+  _title(t) { const el = document.getElementById('tonPurchaseTitle'); if (el) el.textContent = t; },
+
+  _show() { this._modal()?.classList.add('show'); },
+  _hide() { if (this._closable) this._modal()?.classList.remove('show'); },
+
+  _renderSpinner(text) {
+    this._closable = false;
+    this._body().innerHTML = '';
+    const spinner = document.createElement('div');
+    spinner.className = 'ton-purchase-spinner';
+    const p = document.createElement('div');
+    p.className = 'ton-purchase-subtitle';
+    p.textContent = text;
+    this._body().append(spinner, p);
+  },
+
+  _renderResult({ ok, title, desc, primaryLabel, onPrimary }) {
+    this._closable = true;
+    this._title(title);
+    this._body().innerHTML = '';
+
+    const icon = document.createElement('div');
+    icon.className = `ton-purchase-icon ${ok ? 'success' : 'fail'}`;
+    icon.innerHTML = ok
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+
+    const p = document.createElement('div');
+    p.className = 'ton-purchase-subtitle';
+    p.textContent = desc;
+
+    const btn = document.createElement('button');
+    btn.className = 'ton-purchase-btn';
+    btn.textContent = primaryLabel;
+    btn.addEventListener('click', onPrimary);
+
+    this._body().append(icon, p, btn);
+  },
+
+  // Step shown every time: pay with the already-connected wallet, or
+  // connect a different one. Matches "offer connected wallets or select
+  // a new wallet app" from the design request.
+  _renderChooseWallet() {
+    this._closable = true;
+    this._title(Utils.t('tonPurchaseTitle'));
+    this._body().innerHTML = '';
+
+    const amount = document.createElement('div');
+    amount.className = 'ton-purchase-amount';
+    amount.textContent = this._pkg.amountTon ?? this._pkg.amount;
+    const unit = document.createElement('span');
+    unit.textContent = `TON → ${this._pkg.stars} ⭐`;
+    amount.appendChild(unit);
+    this._body().appendChild(amount);
+
+    if (TonWallet.address) {
+      const payBtn = document.createElement('button');
+      payBtn.className = 'ton-purchase-btn';
+      payBtn.textContent = `${Utils.t('payWithWallet')} (${TonWallet.address.slice(0,4)}…${TonWallet.address.slice(-4)})`;
+      payBtn.addEventListener('click', () => this._runPayment());
+
+      const switchBtn = document.createElement('button');
+      switchBtn.className = 'ton-purchase-btn secondary';
+      switchBtn.textContent = Utils.t('useAnotherWallet');
+      switchBtn.addEventListener('click', async () => {
+        await TonWallet.disconnect();
+        const addr = await TonWallet.connect();
+        if (addr) this._runPayment();
+        else this._renderChooseWallet();
+      });
+
+      this._body().append(payBtn, switchBtn);
+    } else {
+      const connectBtn = document.createElement('button');
+      connectBtn.className = 'ton-purchase-btn';
+      connectBtn.textContent = Utils.t('connectAWallet');
+      connectBtn.addEventListener('click', async () => {
+        this._renderSpinner(Utils.t('connectingWallet'));
+        const addr = await TonWallet.connect();
+        if (addr) this._runPayment();
+        else this._renderChooseWallet();
+      });
+      this._body().appendChild(connectBtn);
     }
-    if (warning) warning.classList.toggle('hidden', !!this.address);
+  },
+
+  async _runPayment() {
+    const userId = STATE.tg?.initDataUnsafe?.user?.id;
+    if (!userId) { Utils.showToast(Utils.t('userIdUnavailable'), 'error'); this._hide(); return; }
+
+    try {
+      this._renderSpinner(Utils.t('confirmInWalletApp'));
+
+      const res = await fetch(`${TON_API_BASE}/ton/create-pending`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, productId: this._pkg.id, walletAddress: TonWallet.address })
+      });
+      if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to create pending payment'); }
+      const { reference, merchantWallet, amountTon } = await res.json();
+
+      // Resolves once signed + broadcast — not on-chain confirmation yet.
+      await TonWallet.sendPayment(amountTon, merchantWallet, reference);
+
+      this._renderSpinner(Utils.t('waitingTonConfirmation'));
+      const confirmed = await Deposit.waitForTonConfirmation(reference);
+
+      if (confirmed) {
+        const stars = await BackendAPI.claimTonCredits();
+        this._renderResult({
+          ok: true,
+          title: Utils.t('tonPaymentSuccessTitle'),
+          desc: Utils.t('tonPaymentSuccessDesc', { n: stars || this._pkg.stars }),
+          primaryLabel: Utils.t('done'),
+          onPrimary: () => this._hide()
+        });
+      } else {
+        // Not confirmed within the polling window — not a failure. The
+        // backend keeps watching for 30 min and syncBalance() picks the
+        // credit up automatically the moment it lands.
+        this._renderResult({
+          ok: true,
+          title: Utils.t('tonConfirmationPendingTitle'),
+          desc: Utils.t('tonConfirmationPendingDesc'),
+          primaryLabel: Utils.t('close'),
+          onPrimary: () => this._hide()
+        });
+      }
+    } catch (err) {
+      const cancelled = String(err.message).toLowerCase().includes('reject');
+      this._renderResult({
+        ok: false,
+        title: Utils.t('tonPaymentFailedTitle'),
+        desc: cancelled ? Utils.t('paymentCancelled') : Utils.t('invoiceError', { msg: err.message }),
+        primaryLabel: Utils.t('tryAgain'),
+        onPrimary: () => this._renderChooseWallet()
+      });
+    }
+  },
+
+  open(pkg) {
+    this._pkg = pkg;
+    this._show();
+    this._renderChooseWallet();
+  },
+
+  init() {
+    document.getElementById('tonPurchaseClose')?.addEventListener('click', () => this._hide());
+    document.getElementById('tonPurchaseModal')?.addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) this._hide();
+    });
   }
 };
 
@@ -2546,7 +2784,6 @@ const Deposit = {
     this.renderPackages('stars');
     this.renderPackages('ton');
     this.initIcons();
-    document.getElementById('tonConnectBtn')?.addEventListener('click', () => TonWallet.connect());
   },
 
   initTabs() {
@@ -2646,48 +2883,8 @@ const Deposit = {
     }
   },
 
-  async purchaseWithTon(pkg) {
-    const userId = STATE.tg?.initDataUnsafe?.user?.id;
-    if (!userId) { Utils.showToast(Utils.t('userIdUnavailable'), 'error'); return; }
-
-    if (!TonWallet.connector?.connected) {
-      const addr = await TonWallet.connect();
-      if (!addr) return;
-    }
-
-    try {
-      Utils.showToast(Utils.t('processingTonPayment'), 'success');
-      const res = await fetch(`${TON_API_BASE}/ton/create-pending`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, productId: pkg.id, walletAddress: TonWallet.address })
-      });
-      if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to create pending payment'); }
-      const { reference, merchantWallet, amountTon } = await res.json();
-
-      // This only resolves once the wallet has signed and broadcast the
-      // transfer — it is NOT on-chain confirmation. ton-payments.js only
-      // credits Stars after its poller actually sees the transaction land
-      // on the merchant wallet (every ~12s), so we still have to wait.
-      await TonWallet.sendPayment(amountTon, merchantWallet, reference);
-
-      Utils.showToast(Utils.t('waitingTonConfirmation'), 'success');
-      const confirmed = await this.waitForTonConfirmation(reference);
-
-      if (confirmed) {
-        const stars = await BackendAPI.claimTonCredits();
-        Utils.showToast(Utils.t('paymentSuccessAdding', { n: stars || pkg.stars }), 'success');
-      } else {
-        // Not confirmed within our polling window — doesn't mean it failed.
-        // The backend keeps watching for PENDING_EXPIRY_MS (30 min) and
-        // syncBalance()'s periodic claimTonCredits() will pick it up
-        // automatically once it lands, without the user needing to do anything.
-        Utils.showToast(Utils.t('tonConfirmationPending'), 'success');
-      }
-    } catch (err) {
-      if (String(err.message).toLowerCase().includes('reject')) Utils.showToast(Utils.t('paymentCancelled'), 'error');
-      else Utils.showToast(Utils.t('invoiceError', { msg: err.message }), 'error');
-    }
+  purchaseWithTon(pkg) {
+    TonPurchaseFlow.open(pkg);
   },
 
   // Polls GET /ton/status/:reference until the backend's on-chain watcher
@@ -3722,6 +3919,8 @@ async function initializeApp() {
   Settings.init();
   LanguageModal.init();
   WalletPickerModal.init();
+  TonWalletManage.init();
+  TonPurchaseFlow.init();
   ContentBoxes.init();
   EventListeners.init();
 
