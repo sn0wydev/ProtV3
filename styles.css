@@ -470,6 +470,7 @@ body.no-scroll{ position:fixed; overflow:hidden; width:100%; height:100%; }
 .win-modal-overlay{ z-index:2000; }
 .prize-modal-overlay{ z-index:2001; }
 .language-modal-overlay{ z-index:2002; }
+#walletPickerModal{ z-index:2010; } /* must render above tonPurchaseModal, which also uses .language-modal-overlay and opens it mid-flow */
 .full-inventory-modal-overlay{ z-index:3000; }
 .win-modal-overlay.show, .prize-modal-overlay.show, .language-modal-overlay.show, .full-inventory-modal-overlay.show{
   display:flex; animation:fadeInModal .3s ease forwards;
