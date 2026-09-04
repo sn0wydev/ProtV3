@@ -274,8 +274,12 @@
           <div class="deposit-content">
             <div class="deposit-list active" id="deposit-stars"><div class="packages-grid"></div></div>
             <div class="deposit-list" id="deposit-ton">
-              <button class="ton-connect-btn" id="tonConnectBtn" data-i18n="connectWallet">Connect Wallet</button>
-              <div class="ton-wallet-warning" id="tonWalletWarning" data-i18n="walletNotConnectedWarning">⚠️ Connect a wallet to purchase with TON</div>
+              <div class="ton-wallet-bar">
+                <button class="ton-wallet-chip" id="tonWalletChip">
+                  <span class="ton-wallet-chip-dot"></span>
+                  <span class="ton-wallet-chip-label" id="tonWalletChipLabel" data-i18n="walletNotConnected">Not connected</span>
+                </button>
+              </div>
               <div class="packages-grid"></div>
             </div>
             <div class="deposit-info-card">
@@ -613,6 +617,28 @@
           <button class="language-modal-close" id="walletPickerClose">×</button>
         </div>
         <div class="language-list" id="walletPickerList"></div>
+      </div>
+    </div>
+
+    <!-- TON Purchase Flow Modal -->
+    <div class="language-modal-overlay" id="tonPurchaseModal">
+      <div class="language-modal ton-purchase-modal">
+        <div class="language-modal-header">
+          <h2 id="tonPurchaseTitle" data-i18n="tonPurchaseTitle">Purchase with TON</h2>
+          <button class="language-modal-close" id="tonPurchaseClose">×</button>
+        </div>
+        <div class="ton-purchase-body" id="tonPurchaseBody"></div>
+      </div>
+    </div>
+
+    <!-- Wallet Manage Modal -->
+    <div class="language-modal-overlay" id="tonWalletManageModal">
+      <div class="language-modal ton-purchase-modal">
+        <div class="language-modal-header">
+          <h2 data-i18n="walletConnected">Wallet Connected</h2>
+          <button class="language-modal-close" id="tonWalletManageClose">×</button>
+        </div>
+        <div class="ton-purchase-body" id="tonWalletManageBody"></div>
       </div>
     </div>
 
