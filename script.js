@@ -2525,9 +2525,15 @@ const TonWallet = {
     }
 
     return new Promise(resolve => {
+      let settled = false;
+      const finish = (val) => { if (settled) return; settled = true; clearTimeout(timer); unsub?.(); resolve(val); };
       const unsub = this.connector.onStatusChange(wallet => {
-        if (wallet) { unsub(); resolve(this.address); }
+        if (wallet) finish(this.address);
       });
+      // If the user rejects in the wallet app, closes it, or never comes
+      // back, onStatusChange never fires — without this the purchase
+      // modal would spin on "Waiting for wallet connection…" forever.
+      const timer = setTimeout(() => finish(null), 90000);
     });
   },
 
