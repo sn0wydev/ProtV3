@@ -1408,7 +1408,7 @@ const Utils = {
 
 // Standalone TON on-chain payment backend (ton-payments.js). Fully
 // independent of vgtserver (gift transactor) and vgservers (Stars invoices).
-const TON_API_BASE = 'https://REPLACE_WITH_YOUR_TON_BACKEND_DOMAIN.up.railway.app';
+const TON_API_BASE = 'https://ton-backend347-production.up.railway.app';
 
 const STATUS_CONFIG = {
   URL: 'https://raw.githubusercontent.com/sn0wydev/ProtV3/main/status.json',
