@@ -241,6 +241,26 @@
               <div class="podium-container"></div>
               <div class="ranks-list"></div>
             </div>
+
+            <!-- Shown instead of the lists when /leaderboard can't be reached -->
+            <div class="leaderboard-error-state" id="leaderboardErrorState" style="display:none;">
+              <div class="leaderboard-error-lottie"></div>
+              <div class="leaderboard-error-title" data-i18n="leaderboardErrorTitle">Things went wacky...</div>
+              <div class="leaderboard-error-text" data-i18n="leaderboardErrorText">Couldn't display anyone... Please try again later!</div>
+              <button class="leaderboard-error-retry" id="leaderboardRetryBtn" type="button" data-i18n="tryAgain">Try Again</button>
+            </div>
+
+            <!-- Skeleton shown while the first request is in flight -->
+            <div class="leaderboard-skeleton">
+              <div class="skeleton-podium">
+                <div class="skeleton-podium-card"></div>
+                <div class="skeleton-podium-card"></div>
+                <div class="skeleton-podium-card"></div>
+              </div>
+              <div class="skeleton-rank-card"></div>
+              <div class="skeleton-rank-card"></div>
+              <div class="skeleton-rank-card"></div>
+            </div>
           </div>
           <div class="your-rank-card">
             <div class="your-rank-label" data-i18n="yourRank">Your Rank</div>
