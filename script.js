@@ -271,38 +271,11 @@ const STATE = {
   voidLastScaleUpdate: 0,
 
   currentLeaderboardTab: 'coins',
-  leaderboardData: {
-    coins: [
-      { id: 1, name: 'CryptoKing',    username: 'cryptoking',    coins: 15420, avatar: null },
-      { id: 2, name: 'MoonWalker',    username: 'moonwalker',    coins: 12850, avatar: null },
-      { id: 3, name: 'DiamondHands',  username: 'diamondhands',  coins: 10370, avatar: null },
-      { id: 4, name: 'TokenMaster',   username: 'tokenmaster',   coins: 8920,  avatar: null },
-      { id: 5, name: 'BlockChainer',  username: 'blockchainer',  coins: 7540,  avatar: null },
-      { id: 6, name: 'NFT Hunter',    username: 'nfthunter',     coins: 6230,  avatar: null },
-      { id: 7, name: 'Satoshi Fan',   username: 'satoshifan',    coins: 5180,  avatar: null },
-      { id: 8, name: 'Whale Watcher', username: 'whalewatcher',  coins: 4560,  avatar: null }
-    ],
-    gifts: [
-      { id: 1, name: 'GiftCollector',  username: 'giftcollector',  gifts: 87, avatar: null },
-      { id: 2, name: 'Present Pro',    username: 'presentpro',     gifts: 65, avatar: null },
-      { id: 3, name: 'Lucky Winner',   username: 'luckywinner',    gifts: 52, avatar: null },
-      { id: 4, name: 'Spin Master',    username: 'spinmaster',     gifts: 43, avatar: null },
-      { id: 5, name: 'Fortune Finder', username: 'fortunefinder',  gifts: 38, avatar: null },
-      { id: 6, name: 'Reward Hunter',  username: 'rewardhunter',   gifts: 31, avatar: null },
-      { id: 7, name: 'Loot Lord',      username: 'lootlord',       gifts: 27, avatar: null },
-      { id: 8, name: 'Prize Collector',username: 'prizecollector', gifts: 19, avatar: null }
-    ],
-    stars: [
-      { id: 1, name: 'StarBaron',     username: 'starbaron',     stars: 9800,  avatar: null },
-      { id: 2, name: 'GalaxyBrain',   username: 'galaxybrain',   stars: 7650,  avatar: null },
-      { id: 3, name: 'NebulaMike',    username: 'nebulamike',    stars: 5430,  avatar: null },
-      { id: 4, name: 'CosmosQueen',   username: 'cosmosqueen',   stars: 4210,  avatar: null },
-      { id: 5, name: 'AstroAlex',     username: 'astroalex',     stars: 3180,  avatar: null },
-      { id: 6, name: 'OrbitalJay',    username: 'orbitaljay',    stars: 2560,  avatar: null },
-      { id: 7, name: 'StarDrifter',   username: 'stardrifter',   stars: 1820,  avatar: null },
-      { id: 8, name: 'PulsarPete',    username: 'pulsarpete',    stars: 1100,  avatar: null }
-    ]
-  },
+  // Populated from the real /leaderboard endpoint (see Leaderboard.fetchData).
+  // Empty until that call resolves — no more placeholder names.
+  leaderboardData: { coins: [], stars: [], gifts: [] },
+  leaderboardYou: null,     // { coins:{rank,score}, stars:{...}, gifts:{...}, hidden } from the backend
+  leaderboardStatus: 'idle', // 'idle' | 'loading' | 'ready' | 'error'
   settings: {
   language: 'en',
   soundEffects: true,
@@ -342,6 +315,9 @@ const TRANSLATIONS = {
     privacy: 'Privacy',
     dangerZone: 'Danger Zone',
     topPlayers: 'Leaderboard',
+    leaderboardEmpty: 'No one on the board yet — be the first!',
+    leaderboardErrorTitle: 'Things went wacky...',
+    leaderboardErrorText: "Couldn't display anyone... Please try again later!",
 
     copyright: '© 2025 Copyright All Rights Reserved',
     liveGifts: '▸ live gifts',
@@ -530,6 +506,9 @@ const TRANSLATIONS = {
     privacy: 'Приватность',
     dangerZone: 'Опасная зона',
     topPlayers: 'Лидеры',
+    leaderboardEmpty: 'Тут пока никого нет — станьте первым!',
+    leaderboardErrorTitle: 'Что-то пошло не так...',
+    leaderboardErrorText: 'Не удалось загрузить список. Попробуйте позже!',
 
     copyright: '© 2025 Все права защищены',
     liveGifts: '▸ подарки в реальном времени',
@@ -695,6 +674,9 @@ const TRANSLATIONS = {
     privacy: 'Privacidad',
     dangerZone: 'Zona de peligro',
     topPlayers: 'Clasificación',
+    leaderboardEmpty: 'Todavía no hay nadie — ¡sé el primero!',
+    leaderboardErrorTitle: 'Algo salió mal...',
+    leaderboardErrorText: 'No se pudo cargar la lista. ¡Inténtalo más tarde!',
 
     copyright: '© 2025 Todos los derechos reservados',
     liveGifts: '▸ regalos en vivo',
@@ -860,6 +842,9 @@ const TRANSLATIONS = {
     privacy: 'Confidentialité',
     dangerZone: 'Zone dangereuse',
     topPlayers: 'Classement',
+    leaderboardEmpty: "Personne pour l'instant — soyez le premier !",
+    leaderboardErrorTitle: 'Un truc a mal tourné...',
+    leaderboardErrorText: "Impossible d'afficher le classement... Réessayez plus tard !",
 
     copyright: '© 2025 Tous droits réservés',
     liveGifts: '▸ cadeaux en direct',
@@ -1025,6 +1010,9 @@ const TRANSLATIONS = {
     privacy: 'Datenschutz',
     dangerZone: 'Gefahrenzone',
     topPlayers: 'Bestenliste',
+    leaderboardEmpty: 'Noch niemand hier — sei der Erste!',
+    leaderboardErrorTitle: 'Da ist was schiefgelaufen...',
+    leaderboardErrorText: 'Die Liste konnte nicht geladen werden... Bitte später erneut versuchen!',
 
     copyright: '© 2025 Alle Rechte vorbehalten',
     liveGifts: '▸ Live-Geschenke',
@@ -1190,6 +1178,9 @@ const TRANSLATIONS = {
     privacy: '隐私',
     dangerZone: '危险区域',
     topPlayers: '排行榜',
+    leaderboardEmpty: '暂时还没有人上榜——快来当第一个吧！',
+    leaderboardErrorTitle: '出了点小状况……',
+    leaderboardErrorText: '暂时无法显示排行榜，请稍后再试！',
 
     copyright: '© 2025 版权所有',
     liveGifts: '▸ 实时礼物',
@@ -1429,6 +1420,10 @@ const Utils = {
 // independent of vgtserver (gift transactor) and vgservers (Stars invoices).
 const TON_API_BASE = 'https://ton-backend347-production.up.railway.app';
 
+// VGDataStorage — Postgres-backed service that also holds the shared
+// users table (profile + coins/stars) the global leaderboard reads from.
+const DATA_STORE_URL = 'https://vgdatastorage-production.up.railway.app';
+
 const STATUS_CONFIG = {
   URL: 'https://raw.githubusercontent.com/sn0wydev/ProtV3/main/status.json',
   TIMEOUT_MS: 4000
@@ -1492,12 +1487,43 @@ const BackendAPI = {
   // ── Coins ──
 
   async getUserCoins()   { return this._cloudGet('userCoins', STATE.userCoins); },
-  async saveUserCoins(v) { return this._cloudSet('userCoins', v); },
+  async saveUserCoins(v) { const ok = await this._cloudSet('userCoins', v); this.syncUserProfile({ coins: v }); return ok; },
 
   // ── Stars ──
 
   async getUserStars()   { return this._cloudGet('userStars', STATE.userStars); },
-  async saveUserStars(v) { return this._cloudSet('userStars', v); },
+  async saveUserStars(v) { const ok = await this._cloudSet('userStars', v); this.syncUserProfile({ stars: v }); return ok; },
+
+  // ── Leaderboard profile sync ──
+  // Fire-and-forget push to VGDataStorage's users table. Never blocks the
+  // caller and never surfaces errors to the user — worst case the
+  // leaderboard is a little stale, which isn't worth interrupting anyone
+  // over. Accepts a partial payload; omitted fields are left untouched
+  // server-side (see PUT /users/:id).
+  async syncUserProfile(partial = {}) {
+    const userId = STATE.tg?.initDataUnsafe?.user?.id;
+    if (!userId) return;
+
+    const user = STATE.userData || {};
+    const payload = {
+      username: user.username ?? undefined,
+      first_name: user.first_name ?? undefined,
+      last_name: user.last_name ?? undefined,
+      avatar_url: user.photo_url ?? undefined,
+      show_in_leaderboard: STATE.settings?.showInLeaderboard,
+      ...partial
+    };
+
+    try {
+      await fetch(`${DATA_STORE_URL}/users/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch (err) {
+      console.error('❌ syncUserProfile failed:', err);
+    }
+  },
 
   // ── TON payments (ton-payments.js confirms on-chain transfers async via
   // polling, then holds an unclaimed credit — nothing is pushed to the
@@ -1565,6 +1591,7 @@ const TelegramApp = {
       STATE.tg.ready();
       STATE.tg.expand();
       BackendAPI.startPeriodicSync();
+      BackendAPI.syncUserProfile();
 
       STATE.tg.onEvent('viewportChanged', (e) => {
         if (e.isStateStable) setTimeout(() => BackendAPI.syncBalance(), 1000);
@@ -2249,6 +2276,8 @@ const FullInventoryModal = {
 // ============================================
 
 const Leaderboard = {
+  _fetchPromise: null,
+
   init() {
     const trophyEl = document.getElementById('leaderboardTrophyIcon');
     if (trophyEl && !trophyEl.children.length) {
@@ -2271,10 +2300,111 @@ const Leaderboard = {
       });
     });
 
-    this.render(STATE.currentLeaderboardTab);
+    const retryBtn = document.getElementById('leaderboardRetryBtn');
+    if (retryBtn && !retryBtn.dataset.bound) {
+      retryBtn.dataset.bound = 'true';
+      retryBtn.addEventListener('click', () => this.fetchData(true));
+    }
+
+    this.fetchData();
+  },
+
+  // ── Real data fetch ──
+  // One request pulls all three lists + "your rank" so switching tabs
+  // never has to re-fetch. Dedupes concurrent calls (e.g. init() firing
+  // while a retry from the error state is still in flight).
+  async fetchData(force = false) {
+    if (this._fetchPromise && !force) return this._fetchPromise;
+
+    STATE.leaderboardStatus = 'loading';
+    this.setViewState('loading');
+
+    const userId = STATE.tg?.initDataUnsafe?.user?.id;
+    const url = `${DATA_STORE_URL}/leaderboard${userId ? `?user_id=${userId}` : ''}`;
+
+    this._fetchPromise = (async () => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 8000);
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timer);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+
+        STATE.leaderboardData = {
+          coins: (data.coins || []).map(r => this._normalize(r, 'coins')),
+          stars: (data.stars || []).map(r => this._normalize(r, 'stars')),
+          gifts: (data.gifts || []).map(r => this._normalize(r, 'gifts'))
+        };
+        STATE.leaderboardYou = data.you || null;
+        STATE.leaderboardStatus = 'ready';
+        this.setViewState('ready');
+        this.render(STATE.currentLeaderboardTab);
+
+      } catch (err) {
+        console.error('❌ Leaderboard fetch failed:', err);
+        STATE.leaderboardStatus = 'error';
+        this.setViewState('error');
+      } finally {
+        this._fetchPromise = null;
+      }
+    })();
+
+    return this._fetchPromise;
+  },
+
+  // Maps a raw DB row (first_name/last_name/username/coins|stars|gifts)
+  // into the { id, name, username, avatar, coins|stars|gifts } shape the
+  // podium/rank card renderers expect.
+  _normalize(row, type) {
+    const name = row.last_name ? `${row.first_name || ''} ${row.last_name}`.trim()
+                : (row.first_name || row.username || 'Player');
+    return {
+      id: row.user_id,
+      name,
+      username: row.username || null,
+      avatar: row.avatar_url || null,
+      coins: type === 'coins' ? Number(row.coins) || 0 : undefined,
+      stars: type === 'stars' ? Number(row.stars) || 0 : undefined,
+      gifts: type === 'gifts' ? Number(row.gifts) || 0 : undefined
+    };
+  },
+
+  // Swaps between the loading skeleton, the real lists, and the
+  // "couldn't connect" duck state. All three states share the same
+  // leaderboard-content area so switching tabs doesn't fight with them.
+  setViewState(state) {
+    const errorEl    = document.getElementById('leaderboardErrorState');
+    const skeletonEl = document.querySelector('.leaderboard-skeleton');
+    const rankCard   = document.querySelector('.your-rank-card');
+
+    if (skeletonEl) skeletonEl.style.display = state === 'loading' ? 'flex' : 'none';
+
+    if (errorEl) {
+      errorEl.style.display = state === 'error' ? 'flex' : 'none';
+      if (state === 'error' && !errorEl.dataset.animated) {
+        const anim = errorEl.querySelector('.leaderboard-error-lottie');
+        if (anim && typeof lottie !== 'undefined') {
+          lottie.loadAnimation({ container: anim, renderer: 'svg', loop: true, autoplay: true, path: 'assets/CleaningDuck.json' });
+        }
+        errorEl.dataset.animated = 'true';
+      }
+    }
+
+    // The active .leaderboard-list keeps its own .active display toggle
+    // (used for tab switching) — here we just hide/show the whole group
+    // for the loading/error states.
+    document.querySelectorAll('.leaderboard-list').forEach(l => {
+      l.style.display = (state === 'error' || state === 'loading') ? 'none' : '';
+    });
+
+    if (rankCard) rankCard.style.display = (state === 'error' || state === 'loading') ? 'none' : '';
   },
 
   render(type) {
+    if (STATE.leaderboardStatus !== 'ready') return;
+
     const data =
       type === 'coins' ? STATE.leaderboardData.coins :
       type === 'stars' ? STATE.leaderboardData.stars :
@@ -2287,8 +2417,12 @@ const Leaderboard = {
     if (podium) podium.innerHTML = '';
     if (ranks)  ranks.innerHTML  = '';
 
-    data.slice(0, 3).forEach((p, i) => podium?.appendChild(this.createPodiumCard(p, i + 1, type)));
-    data.slice(3).forEach((p, i)    => ranks?.appendChild(this.createRankCard(p, i + 4, type)));
+    if (!data.length) {
+      if (ranks) ranks.innerHTML = `<div class="leaderboard-empty">${Utils.t('leaderboardEmpty')}</div>`;
+    } else {
+      data.slice(0, 3).forEach((p, i) => podium?.appendChild(this.createPodiumCard(p, i + 1, type)));
+      data.slice(3).forEach((p, i)    => ranks?.appendChild(this.createRankCard(p, i + 4, type)));
+    }
     this.updateYourRank(type);
   },
 
@@ -2330,6 +2464,9 @@ const Leaderboard = {
     return card;
   },
 
+  // Rank/score come straight from the backend's "you" block now (it
+  // already knows the caller's global position) rather than being
+  // derived from whatever page of the list happens to be loaded.
   updateYourRank(type) {
     const user  = STATE.userData || { first_name: 'You' };
     const uName = user.last_name ? `${user.first_name} ${user.last_name}` : user.first_name;
@@ -2338,26 +2475,33 @@ const Leaderboard = {
     const scoreEl = document.getElementById('yourRankScore');
     if (!rankEl || !nameEl || !scoreEl) return;
     nameEl.textContent = uName;
-    if (type === 'coins') {
-      rankEl.textContent  = STATE.leaderboardData.coins.filter(p => p.coins > STATE.userCoins).length + 1;
-      scoreEl.textContent = `${STATE.userCoins.toLocaleString()} ${Utils.t('tabCoins').toLowerCase()}`;
-    } else if (type === 'stars') {
-      rankEl.textContent  = STATE.leaderboardData.stars.filter(p => p.stars > STATE.userStars).length + 1;
-      scoreEl.textContent = `${STATE.userStars.toLocaleString()} ⭐`;
-    } else {
-      const gifts = STATE.inventoryItems.length;
-      rankEl.textContent  = STATE.leaderboardData.gifts.filter(p => p.gifts > gifts).length + 1;
-      scoreEl.textContent = `${gifts} ${Utils.t('tabGifts').toLowerCase()}`;
+
+    const you = STATE.leaderboardYou?.[type];
+    if (you) {
+      rankEl.textContent = you.hidden ? '—' : you.rank;
+      const score = you.score;
+      scoreEl.textContent =
+        type === 'coins' ? `${score.toLocaleString()} ${Utils.t('tabCoins').toLowerCase()}` :
+        type === 'stars' ? `${score.toLocaleString()} ⭐` :
+        `${score} ${Utils.t('tabGifts').toLowerCase()}`;
+      return;
     }
+
+    // No signed-in Telegram user (fallback/dev mode) — fall back to local
+    // balances with no computed rank, rather than showing stale/fake data.
+    rankEl.textContent = '--';
+    if (type === 'coins')      scoreEl.textContent = `${STATE.userCoins.toLocaleString()} ${Utils.t('tabCoins').toLowerCase()}`;
+    else if (type === 'stars') scoreEl.textContent = `${STATE.userStars.toLocaleString()} ⭐`;
+    else                        scoreEl.textContent = `${STATE.inventoryItems.length} ${Utils.t('tabGifts').toLowerCase()}`;
   },
 
   updateData() {
-    if (STATE.currentPage === 'leaderboard') this.updateYourRank(STATE.currentLeaderboardTab);
+    if (STATE.currentPage === 'leaderboard' && STATE.leaderboardStatus === 'ready') this.updateYourRank(STATE.currentLeaderboardTab);
   },
 
   // Re-render whatever's currently on screen with fresh translated strings.
   refreshLabels() {
-    if (STATE.currentPage === 'leaderboard') this.render(STATE.currentLeaderboardTab);
+    if (STATE.currentPage === 'leaderboard' && STATE.leaderboardStatus === 'ready') this.render(STATE.currentLeaderboardTab);
   }
 };
 
@@ -3757,6 +3901,7 @@ const Settings = {
       document.getElementById(id)?.addEventListener('change', (e) => {
         STATE.settings[id] = e.target.checked;
         this.save(); this.applyEffects();
+        if (id === 'showInLeaderboard') BackendAPI.syncUserProfile({ show_in_leaderboard: e.target.checked });
         Utils.showToast(Utils.t('settingSaved'));
       });
     });
