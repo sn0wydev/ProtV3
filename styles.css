@@ -789,6 +789,40 @@ body.no-scroll{ position:fixed; overflow:hidden; width:100%; height:100%; }
 .rank-name{ font-size:.8rem; font-weight:600; color:var(--ghost); margin-bottom:.1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .rank-score{ font-size:.7rem; color:var(--fog-dim); font-weight:500; font-family:var(--font-mono); }
 
+.leaderboard-empty{ text-align:center; padding:2rem 1rem; color:var(--fog-dim); font-size:.82rem; font-family:var(--font-mono); }
+
+/* ── Skeleton (loading) ── */
+.leaderboard-skeleton{ display:none; flex-direction:column; gap:.7rem; }
+.skeleton-podium{ display:grid; grid-template-columns:repeat(3,1fr); gap:.55rem; }
+.skeleton-podium-card{ height:118px; border-radius:15px; background:var(--void-1); border:1px solid var(--void-line); overflow:hidden; position:relative; }
+.skeleton-rank-card{ height:56px; border-radius:11px; background:var(--void-1); border:1px solid var(--void-line); overflow:hidden; position:relative; }
+.skeleton-podium-card::after, .skeleton-rank-card::after{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.06) 50%, transparent 70%);
+  transform:translateX(-100%); animation:skeletonShimmer 1.4s ease-in-out infinite;
+}
+@keyframes skeletonShimmer{ to{ transform:translateX(100%); } }
+
+/* ── Error state (duck) ── */
+.leaderboard-error-state{
+  display:none; flex-direction:column; align-items:center; text-align:center;
+  padding:2.2rem 1.2rem 1.6rem; gap:.2rem;
+}
+.leaderboard-error-lottie{ width:150px; height:150px; margin-bottom:.2rem; }
+.leaderboard-error-title{
+  font-family:var(--font-display); font-size:1.05rem; font-weight:700; color:var(--ghost); margin-bottom:.35rem;
+}
+.leaderboard-error-text{
+  font-size:.8rem; color:var(--fog-dim); max-width:280px; line-height:1.45; margin-bottom:1.1rem;
+}
+.leaderboard-error-retry{
+  padding:.6rem 1.4rem; border-radius:100px; border:1px solid var(--void-line-2);
+  background:rgba(124,92,250,0.16); color:var(--ghost); font-family:var(--font-body); font-weight:600;
+  font-size:.8rem; cursor:pointer; transition:all .25s ease;
+}
+.leaderboard-error-retry:hover{ background:rgba(124,92,250,0.28); border-color:rgba(124,92,250,.4); }
+.leaderboard-error-retry:active{ transform:scale(.96); }
+
 .your-rank-card{ background:var(--void-1); border:1px solid rgba(124,92,250,.4); border-radius:15px; padding:1.1rem; animation:scaleIn .4s ease .3s backwards; }
 .your-rank-label{ font-size:.62rem; font-weight:700; color:var(--fog-dim); text-transform:uppercase; letter-spacing:.07em; margin-bottom:.65rem; font-family:var(--font-mono); }
 .your-rank-content{ display:flex; align-items:center; gap:1rem; }
