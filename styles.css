@@ -340,6 +340,17 @@ body.no-scroll{ position:fixed; overflow:hidden; width:100%; height:100%; }
 .inventory-item.empty{ background:rgba(255,255,255,0.02); border:1px dashed var(--void-line); cursor:default; }
 .item-icon-container{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:12%; }
 
+/* Pending NFT transfer — item stays visible but visually "in transit" */
+.inventory-item.pending-transfer{ opacity:.55; filter:grayscale(.4); position:relative; }
+.countdown-badge{
+  position:absolute; bottom:3px; left:50%; transform:translateX(-50%);
+  background:rgba(8,7,12,0.85); border:1px solid var(--void-line-2); border-radius:6px;
+  padding:1px 5px; font-family:var(--font-mono); font-size:.55rem; color:var(--ember-2);
+  letter-spacing:.02em; white-space:nowrap; pointer-events:none;
+}
+.full-inventory-item.pending-transfer{ opacity:.6; filter:grayscale(.35); }
+.full-item-countdown{ position:static; transform:none; margin-top:.25rem; display:inline-block; }
+
 /* Channel */
 .hero--channel{ background:linear-gradient(160deg, #0f2226 0%, var(--void-1) 75%); }
 .hero--channel .hero-glow{ width:120px; height:120px; background:radial-gradient(circle, rgba(69,214,224,.32), transparent 70%); bottom:-38px; right:-30px; }
