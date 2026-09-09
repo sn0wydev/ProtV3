@@ -1876,6 +1876,31 @@ const Countdown = {
 // ============================================
 
 const Inventory = {
+  async loadFromServer() {
+    const userId = STATE.tg?.initDataUnsafe?.user?.id;
+    if (!userId) return;
+
+    try {
+      const res = await fetch(`${DATA_STORE_URL}/prizes?user_id=${userId}`);
+      if (!res.ok) return;
+      const rows = await res.json();
+      
+      STATE.inventoryItems = rows
+        .filter(r => r.status !== 'claimed' && r.status !== 'converted')
+        .map(r => ({
+          value: r.gift_name,
+          type: 'gift',
+          lottie: true, // just a truthy flag — render path looks up the icon via GIFT_SVG_ICONS[value]
+          prizeId: r.prize_id,
+          claimedAt: new Date(r.created_at).getTime(),
+          pendingTransfer: r.status === 'queued_nft',
+          availableAt: r.scheduled_for ? new Date(r.scheduled_for).getTime() : undefined
+        }));
+    } catch (err) {
+      console.error('❌ Inventory.loadFromServer failed:', err);
+    }
+  },
+  
   add(prize) {
     const item = { ...prize, prizeId: Utils.generatePrizeId(), claimedAt: Date.now() };
     STATE.inventoryItems.push(item);
@@ -2017,9 +2042,6 @@ const PrizeModal = {
   },
 
   convert() {
-    // Guard: grab it, then immediately clear it. A second click (or a
-    // double-fired event) sees currentModalPrize already null and bails
-    // at the top instead of converting the same prize twice.
     if (!STATE.currentModalPrize) return;
     const prize = STATE.currentModalPrize;
     STATE.currentModalPrize = null;
@@ -2027,6 +2049,15 @@ const PrizeModal = {
     Currency.add(val);
     Inventory.remove(prize.prizeId);
     this.close();
+
+    // Tell prize-store this row is resolved — otherwise it still looks
+    // "unclaimed" and Inventory.loadFromServer() would bring it back
+    // on the next app open.
+    fetch(`${DATA_STORE_URL}/prizes/${prize.prizeId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'converted' })
+    }).catch(err => console.error('❌ Failed to mark prize converted:', err));
   },
 
   async claim() {
@@ -4268,7 +4299,7 @@ async function initializeApp() {
 
   if (status === 'maintenance') {
     LoadingScreen.showMaintenance(message);
-    return; // ничего остальное не запускаем — приложение остаётся на этом экране
+    return; 
   }
 
   checkForPaymentSuccess();
@@ -4286,6 +4317,7 @@ async function initializeApp() {
   EventListeners.init();
 
   BackendAPI.syncBalance().then(() => Currency.update());
+  await Inventory.loadFromServer();
   Inventory.updateDisplay();
   Countdown.init();
   TonWallet.init()
