@@ -450,6 +450,13 @@ const TRANSLATIONS = {
     giftSentPopupTitle: 'Gift Sent!',
     giftSentPopupMessage: 'Your {name} gift has been sent to your Telegram account!',
     claimFailedPopupTitle: 'Claim Failed',
+    basicClaimSent: '{name}: will be sent eventually…',
+    basicClaimSentPopup: 'Your {name} gift is on its way from @VoidGift_Relayer — it\u2019ll land in your Telegram account shortly.',
+    nftClaimQueued: '{name}: will be transferred in the next 48 hours…',
+    nftClaimQueuedPopup: 'Your {name} NFT gift is queued for transfer from @VoidGift_Relayer. It\u2019ll arrive within 48 hours — you can track the countdown in your Inventory.',
+    nftTransferProcessing: 'Processing…',
+    nftTransferComplete: '{name} has been transferred to your Telegram!',
+    nftTransferFailed: 'Transfer of {name} failed — check Inventory for details',
     connectWallet: 'Connect Wallet',
     chooseWallet: 'Choose a Wallet',
     noWalletFound: 'No wallet found',
@@ -1424,6 +1431,12 @@ const TON_API_BASE = 'https://ton-backend347-production.up.railway.app';
 // users table (profile + coins/stars) the global leaderboard reads from.
 const DATA_STORE_URL = 'https://vgdatastorage-production.up.railway.app';
 
+// Gift Relayer (V2) — replaces the deprecated vgtserver /claim-gift.
+// Verifies Telegram initData itself and sends/transfers gifts from the
+// @VoidGift_Relayer user account. Point this at wherever gift-relayer.js
+// is deployed.
+const GIFT_RELAYER_URL = 'https://vgrelayer-production.up.railway.app';
+
 const STATUS_CONFIG = {
   URL: 'https://raw.githubusercontent.com/sn0wydev/ProtV3/main/status.json',
   TIMEOUT_MS: 4000
@@ -1801,6 +1814,64 @@ const Currency = {
 };
 
 // ============================================
+// COUNTDOWN — live badge for NFT gifts queued for transfer
+// ============================================
+// One shared 1s ticker updates every countdown-badge element's text.
+// A slower poll (per watched prize) asks the relayer whether the
+// transfer actually completed, and flips the item over to "claimed"
+// (removed from inventory) once it has.
+// ============================================
+
+const Countdown = {
+  _watched: new Map(), // prizeId -> pollTimer
+
+  format(availableAtMs) {
+    const remainingMs = availableAtMs - Date.now();
+    if (remainingMs <= 0) return Utils.t('nftTransferProcessing');
+    const totalSec = Math.floor(remainingMs / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  },
+
+  init() {
+    // Resume watching anything already marked pending (e.g. after a
+    // re-render triggered by other app state, not a fresh claim).
+    STATE.inventoryItems.filter(i => i.pendingTransfer).forEach(i => this.watch(i.prizeId));
+
+    setInterval(() => {
+      document.querySelectorAll('.countdown-badge').forEach(el => {
+        const item = STATE.inventoryItems.find(i => i.prizeId === el.dataset.prizeId);
+        if (item) el.textContent = this.format(item.availableAt);
+      });
+    }, 1000);
+  },
+
+  watch(prizeId) {
+    if (this._watched.has(prizeId)) return;
+    const poll = async () => {
+      try {
+        const res = await fetch(`${GIFT_RELAYER_URL}/claim-status/${prizeId}`);
+        const data = await res.json();
+        if (data.status === 'claimed') {
+          clearInterval(this._watched.get(prizeId));
+          this._watched.delete(prizeId);
+          Inventory.remove(prizeId);
+          Utils.showToast(Utils.t('nftTransferComplete', { name: data.gift_name }), 'success');
+        } else if (data.status === 'failed') {
+          clearInterval(this._watched.get(prizeId));
+          this._watched.delete(prizeId);
+          Utils.showToast(Utils.t('nftTransferFailed', { name: data.gift_name }), 'error');
+        }
+      } catch { /* transient network error, try again next tick */ }
+    };
+    poll();
+    this._watched.set(prizeId, setInterval(poll, 60000)); // check completion once a minute
+  }
+};
+
+// ============================================
 // INVENTORY
 // ============================================
 
@@ -1830,6 +1901,22 @@ const Inventory = {
     return removed;
   },
 
+  // Marks an NFT-tier item as claimed-but-not-yet-transferred. It stays
+  // visible in the inventory (still counts, still shown) but renders
+  // with a countdown badge until availableAt passes. The relayer's
+  // background worker is what actually completes the transfer — this
+  // is purely a UI state until Countdown.poll() confirms it's done.
+  markPendingTransfer(prizeId, scheduledForIso) {
+    const item = STATE.inventoryItems.find(i => i.prizeId === prizeId);
+    if (!item) return;
+    item.pendingTransfer = true;
+    item.availableAt = new Date(scheduledForIso).getTime();
+    this.updateDisplay();
+    const modal = document.getElementById('fullInventoryModal');
+    if (modal?.classList.contains('show')) FullInventoryModal.render(STATE.currentFilter);
+    Countdown.watch(prizeId);
+  },
+
   updateDisplay() {
     const grid = document.querySelector('.inventory-grid');
     if (!grid) return;
@@ -1838,7 +1925,7 @@ const Inventory = {
     const display = STATE.inventoryItems.slice(0, CONFIG.MAX_INVENTORY_DISPLAY);
     display.forEach(item => {
       const div  = document.createElement('div');
-      div.className      = 'inventory-item';
+      div.className      = 'inventory-item' + (item.pendingTransfer ? ' pending-transfer' : '');
       div.dataset.prizeId = item.prizeId;
       const iconDiv = document.createElement('div');
       iconDiv.className  = 'item-icon-container';
@@ -1851,6 +1938,14 @@ const Inventory = {
         iconDiv.appendChild(img);
       }
       div.appendChild(iconDiv);
+      if (item.pendingTransfer) {
+        const badge = Object.assign(document.createElement('div'), {
+          className: 'countdown-badge',
+          dataset: { prizeId: item.prizeId }
+        });
+        badge.textContent = Countdown.format(item.availableAt);
+        div.appendChild(badge);
+      }
       div.addEventListener('click', () => PrizeModal.open(item));
       grid.appendChild(div);
     });
@@ -1938,15 +2033,16 @@ const PrizeModal = {
     if (!STATE.currentModalPrize) { Utils.showToast(Utils.t('noPrizeSelected'), 'error'); return; }
     if (STATE.isClaimingPrize) return; // already mid-claim — ignore extra clicks
 
-    const prize          = STATE.currentModalPrize;
-    const prizeId        = prize.prizeId;
-    const giftName       = prize.value;
-    const telegramGiftId = TELEGRAM_GIFT_IDS[giftName];
+    const prize    = STATE.currentModalPrize;
+    const prizeId  = prize.prizeId;
+    const giftName = prize.value;
 
-    if (!telegramGiftId) { Utils.showToast(Utils.t('giftMappingError', { name: giftName }), 'error'); return; }
-    if (!STATE.tg?.initDataUnsafe?.user?.id) { Utils.showToast(Utils.t('telegramUnavailable'), 'error'); return; }
+    // initData is the raw, Telegram-signed session string — the relayer
+    // verifies this server-side instead of trusting a client-supplied
+    // user id, so this must be present and non-empty.
+    const initData = STATE.tg?.initData;
+    if (!initData) { Utils.showToast(Utils.t('telegramUnavailable'), 'error'); return; }
 
-    const userId   = STATE.tg.initDataUnsafe.user.id;
     const claimBtn = document.getElementById('claimPrizeBtn');
 
     STATE.isClaimingPrize = true;
@@ -1954,22 +2050,36 @@ const PrizeModal = {
     if (claimBtn) { claimBtn.disabled = true; claimBtn.textContent = Utils.t('claimingGift'); }
 
     try {
-      const res = await fetch('https://vgtserver-production.up.railway.app/claim-gift', {
+      const res = await fetch(`${GIFT_RELAYER_URL}/claim`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, prizeId, giftName: telegramGiftId })
+        body: JSON.stringify({ initData, prizeId, giftName })
       });
-      if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to claim gift'); }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to claim gift');
 
-      Inventory.remove(prizeId);
       this.close();
-      Utils.showToast(Utils.t('giftSentToTelegram', { name: giftName }), 'success');
 
-      STATE.tg.showPopup?.({
-        title: Utils.t('giftSentPopupTitle'),
-        message: Utils.t('giftSentPopupMessage', { name: giftName }),
-        buttons: [{ type: 'close' }]
-      });
+      if (data.claim_type === 'nft') {
+        // Not sent yet — stays in inventory as a pending transfer with
+        // a live countdown until the relayer's background worker picks
+        // it up. Do NOT remove it here.
+        Inventory.markPendingTransfer(prizeId, data.scheduled_for);
+        Utils.showToast(Utils.t('nftClaimQueued', { name: giftName }), 'success');
+        STATE.tg.showPopup?.({
+          title: Utils.t('giftSentPopupTitle'),
+          message: Utils.t('nftClaimQueuedPopup', { name: giftName }),
+          buttons: [{ type: 'close' }]
+        });
+      } else {
+        Inventory.remove(prizeId);
+        Utils.showToast(Utils.t('basicClaimSent', { name: giftName }), 'success');
+        STATE.tg.showPopup?.({
+          title: Utils.t('giftSentPopupTitle'),
+          message: Utils.t('basicClaimSentPopup', { name: giftName }),
+          buttons: [{ type: 'close' }]
+        });
+      }
     } catch (error) {
       Utils.showToast(Utils.t('failedToClaim', { msg: error.message }), 'error');
       STATE.tg?.showPopup?.({
@@ -2242,7 +2352,9 @@ const FullInventoryModal = {
 
     filtered.forEach(item => {
       const div = document.createElement('div');
-      div.className = 'full-inventory-item' + (NFT_GIFTS.includes(item.value) ? ' nft-item' : '');
+      div.className = 'full-inventory-item'
+        + (NFT_GIFTS.includes(item.value) ? ' nft-item' : '')
+        + (item.pendingTransfer ? ' pending-transfer' : '');
 
       const lottieWrap = document.createElement('div');
       lottieWrap.className = 'full-item-lottie';
@@ -2263,6 +2375,15 @@ const FullInventoryModal = {
       if (NFT_GIFTS.includes(item.value)) {
         const badge = Object.assign(document.createElement('div'), { className: 'full-item-badge', textContent: 'NFT' });
         div.appendChild(badge);
+      }
+
+      if (item.pendingTransfer) {
+        const countdown = Object.assign(document.createElement('div'), {
+          className: 'countdown-badge full-item-countdown',
+          dataset: { prizeId: item.prizeId },
+          textContent: Countdown.format(item.availableAt)
+        });
+        div.appendChild(countdown);
       }
 
       div.addEventListener('click', () => { PrizeModal.open(item); this.close(); });
@@ -4166,6 +4287,7 @@ async function initializeApp() {
 
   BackendAPI.syncBalance().then(() => Currency.update());
   Inventory.updateDisplay();
+  Countdown.init();
   TonWallet.init()
 
   startWheels();
