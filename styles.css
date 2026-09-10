@@ -474,7 +474,7 @@ body.no-scroll{ position:fixed; overflow:hidden; width:100%; height:100%; }
 @keyframes modalScale{ to{ transform:scale(1); } }
 @keyframes prizeFloat{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(-9px);} }
 
-.win-modal-overlay, .prize-modal-overlay, .language-modal-overlay, .full-inventory-modal-overlay{
+.win-modal-overlay, .prize-modal-overlay, .language-modal-overlay, .full-inventory-modal-overlay, .subscribe-modal-overlay{
   position:fixed; inset:0; background:rgba(4,3,6,0.86); backdrop-filter:blur(14px); display:none;
   align-items:center; justify-content:center; padding:1.4rem; opacity:0;
 }
@@ -483,9 +483,10 @@ body.no-scroll{ position:fixed; overflow:hidden; width:100%; height:100%; }
 .language-modal-overlay{ z-index:2002; }
 #walletPickerModal{ z-index:2010; } /* must render above tonPurchaseModal, which also uses .language-modal-overlay and opens it mid-flow */
 .full-inventory-modal-overlay{ z-index:3000; }
-.win-modal-overlay.show, .prize-modal-overlay.show, .language-modal-overlay.show, .full-inventory-modal-overlay.show{
+.win-modal-overlay.show, .prize-modal-overlay.show, .language-modal-overlay.show, .full-inventory-modal-overlay.show, .subscribe-modal-overlay.show{
   display:flex; animation:fadeInModal .3s ease forwards;
 }
+.subscribe-modal-overlay{ z-index:2005; } /* above the win modals so it can gate a spin already mid-claim-flow */
 
 /* ── Win modal ── */
 .win-modal{
@@ -510,6 +511,24 @@ body.no-scroll{ position:fixed; overflow:hidden; width:100%; height:100%; }
   text-transform:uppercase; letter-spacing:.03em; font-family:var(--font-body);
 }
 .claim-button:hover{ filter:brightness(1.1); transform:translateY(-2px); }
+
+/* ── Subscribe-to-spin modal ── */
+.subscribe-modal-icon{
+  width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.3); color:#c084fc;
+}
+.subscribe-modal-icon svg{ width:30px; height:30px; }
+.subscribe-modal .win-modal-prize-name{ font-size:1rem; font-weight:500; color:var(--fog-dim); }
+.subscribe-modal-channel{
+  font-family:var(--font-mono); font-size:.95rem; font-weight:700; color:#c084fc;
+  background:rgba(192,132,252,0.08); border:1px solid rgba(192,132,252,0.22); border-radius:100px; padding:.4rem 1.1rem;
+}
+.subscribe-open-btn{ background:#c084fc; box-shadow:0 4px 18px rgba(192,132,252,.3); color:#1a0f2e; }
+.subscribe-check-btn{
+  background:transparent; border:1px solid var(--void-line-2); color:var(--ghost); box-shadow:none; margin-top:-.35rem;
+}
+.subscribe-check-btn:hover{ filter:none; background:rgba(255,255,255,0.04); }
+.subscribe-check-btn:disabled{ opacity:.6; cursor:default; transform:none; }
 
 /* ── Prize modal ── */
 .prize-modal{
