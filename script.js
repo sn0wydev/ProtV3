@@ -3683,17 +3683,26 @@ const Subscription = {
   async check(userId) {
     if (!userId) return false;
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
       const res = await fetch(
-        `${GIFT_RELAYER_URL}/check-subscription/${userId}?channel=${SUBSCRIPTION_GATE.CHANNEL_USERNAME}`
+        `${GIFT_RELAYER_URL}/check-subscription/${userId}?channel=${encodeURIComponent(SUBSCRIPTION_GATE.CHANNEL_USERNAME)}`,
+        { signal: controller.signal }
       );
+      clearTimeout(timeout);
       if (!res.ok) return false;
       const data = await res.json();
       return data.subscribed === true;
-    } catch {
-      // Fail closed: if the backend is unreachable we still let people
-      // spin rather than hard-lock the feature — flip to `return false`
-      // if you'd rather fail closed instead.
-      return true;
+    } catch (err) {
+      // FIX: this used to `return true` here — i.e. fail OPEN — so any
+      // network hiccup, CORS failure, timeout, or (critically) the relayer
+      // route not existing/being down would silently let the spin through
+      // with no subscription check at all. That's almost certainly why
+      // spins were going through unchecked. Fail CLOSED instead: an
+      // errored check is treated as "not verified", same as an explicit
+      // `false`, and the gate modal is shown.
+      console.warn('Subscription check failed, blocking spin:', err);
+      return false;
     }
   },
 
