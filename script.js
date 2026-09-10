@@ -30,6 +30,12 @@ const CONFIG = {
   VOID_GAP_WIDTH: 48
 };
 
+const SUBSCRIPTION_GATE = {
+  REQUIRED: true,
+  CHANNEL_USERNAME: '@VoidGifts',
+  CHANNEL_URL: 'https://t.me/VoidGiftsOfficial'
+};
+
 const PRIZE_COIN_VALUES = {
   'Heart': 15,
   'Bear': 75,
@@ -434,6 +440,13 @@ const TRANSLATIONS = {
     paymentSuccessAdding: 'Payment successful! Adding {n} stars…',
     starsAdded: '{n} stars added!',
     notEnoughStars: 'Not enough Stars — need {n} ⭐',
+    subscribeRequiredTitle: 'Subscribe Required',
+    subscribeRequiredDesc: 'Join our channel to unlock Void Spin',
+    openChannel: 'Open Channel',
+    checkAgain: 'Check Again',
+    checking: 'Checking…',
+    subscriptionConfirmed: "You're in — go ahead and spin!",
+    notSubscribedYet: "Still not seeing it — make sure you joined, then check again",
     creatingInvoice: 'Creating invoice…',
     paymentCancelled: 'Payment cancelled',
     paymentFailed: 'Payment failed. Please try again.',
@@ -3650,6 +3663,87 @@ const SpinWheel = {
 // toast + a quick shake on the button, no cubes move.
 // ============================================
 
+// ============================================
+// SUBSCRIPTION GATE — "join our channel to spin".
+//
+// spin() calls Subscription.guard() first. guard() asks the backend
+// (GET /check-subscription/:userId?channel=X on the Gift Relayer
+// service) whether the user is a member of SUBSCRIPTION_GATE.CHANNEL_
+// USERNAME. If yes, guard() resolves true and the caller proceeds
+// straight to spinning. If no (or the backend says "unknown"), guard()
+// shows the modal and resolves false — the caller bails out for this
+// click. Tapping "Check Again" in the modal re-runs the same check; on
+// success it closes the modal AND immediately triggers the spin, so
+// the user doesn't have to click Spin twice.
+// ============================================
+
+const Subscription = {
+  _pendingSpin: false,
+
+  async check(userId) {
+    if (!userId) return false;
+    try {
+      const res = await fetch(
+        `${GIFT_RELAYER_URL}/check-subscription/${userId}?channel=${SUBSCRIPTION_GATE.CHANNEL_USERNAME}`
+      );
+      if (!res.ok) return false;
+      const data = await res.json();
+      return data.subscribed === true;
+    } catch {
+      // Fail closed: if the backend is unreachable we still let people
+      // spin rather than hard-lock the feature — flip to `return false`
+      // if you'd rather fail closed instead.
+      return true;
+    }
+  },
+
+  // Resolves true if the user is already subscribed (nothing shown).
+  // Resolves false and opens the modal otherwise. `resumeSpin` marks
+  // that VoidSpinWheel.spin() should auto-fire once they pass the check.
+  async guard(userId, { resumeSpin = false } = {}) {
+    if (!SUBSCRIPTION_GATE.REQUIRED) return true;
+    const ok = await this.check(userId);
+    if (ok) return true;
+    this._pendingSpin = resumeSpin;
+    this.show();
+    return false;
+  },
+
+  show() {
+    const modal = document.getElementById('subscribeModal');
+    const link  = document.getElementById('subscribeChannelLink');
+    if (link) link.textContent = `@${SUBSCRIPTION_GATE.CHANNEL_USERNAME}`;
+    modal?.classList.add('show');
+  },
+
+  hide() {
+    document.getElementById('subscribeModal')?.classList.remove('show');
+  },
+
+  openChannel() {
+    const url = SUBSCRIPTION_GATE.CHANNEL_URL;
+    STATE.tg?.openTelegramLink ? STATE.tg.openTelegramLink(url) : (STATE.tg?.openLink ? STATE.tg.openLink(url) : window.open(url, '_blank'));
+  },
+
+  async recheck() {
+    const btn = document.getElementById('subscribeCheckBtn');
+    const userId = STATE.tg?.initDataUnsafe?.user?.id;
+    if (btn) { btn.disabled = true; btn.dataset.origText = btn.textContent; btn.textContent = Utils.t('checking'); }
+
+    const ok = await this.check(userId);
+
+    if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origText || Utils.t('checkAgain'); }
+
+    if (ok) {
+      this.hide();
+      Utils.showToast(Utils.t('subscriptionConfirmed'), 'success');
+      if (this._pendingSpin) { this._pendingSpin = false; VoidSpinWheel.spin(); }
+    } else {
+      Utils.showToast(Utils.t('notSubscribedYet'), 'error');
+    }
+  }
+};
+
 const VoidSpinWheel = {
   init() {
     this.populateCubes();
@@ -3766,6 +3860,22 @@ const VoidSpinWheel = {
   },
 
   spin() {
+    if (STATE.voidIsSpinning) return;
+
+    const btn = document.getElementById('voidSpinButton');
+
+    // Subscription gate — checked before the cost check so a broke,
+    // unsubscribed user sees "join the channel" first, not "not enough
+    // Stars". guard() shows the modal itself and returns false if the
+    // user still needs to join; spin() bails out here, and Subscription.
+    // recheck() re-invokes spin() automatically once they pass.
+    const userId = STATE.tg?.initDataUnsafe?.user?.id;
+    Subscription.guard(userId, { resumeSpin: true }).then(ok => {
+      if (ok) this._spinAfterGate();
+    });
+  },
+
+  _spinAfterGate() {
     if (STATE.voidIsSpinning) return;
 
     const btn = document.getElementById('voidSpinButton');
@@ -4232,6 +4342,11 @@ const EventListeners = {
     document.getElementById('voidClaimButton')?.addEventListener('click', () => VoidSpinWheel.claimWin());
     document.getElementById('voidWinModal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) VoidSpinWheel.hideWin(); });
 
+    // ── Subscription gate ──
+    document.getElementById('subscribeOpenBtn')?.addEventListener('click', () => Subscription.openChannel());
+    document.getElementById('subscribeCheckBtn')?.addEventListener('click', () => Subscription.recheck());
+    document.getElementById('subscribeModal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) Subscription.hide(); });
+
     document.getElementById('fullInventoryClose')?.addEventListener('click', () => FullInventoryModal.close());
     document.getElementById('fullInventoryModal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) FullInventoryModal.close(); });
 
@@ -4251,7 +4366,7 @@ const EventListeners = {
     document.getElementById('clearAllBtn')?.addEventListener('click', () => Notifications.clearAll());
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { PrizeModal.close(); FullInventoryModal.close(); LanguageModal.close(); Menu.closeAll(); SpinWheel.hideWin(); VoidSpinWheel.hideWin(); }
+      if (e.key === 'Escape') { PrizeModal.close(); FullInventoryModal.close(); LanguageModal.close(); Menu.closeAll(); SpinWheel.hideWin(); VoidSpinWheel.hideWin(); Subscription.hide(); }
       if ((e.ctrlKey || e.metaKey) && e.key === 'd') { e.preventDefault(); document.getElementById('debugPanel')?.classList.toggle('active'); }
       if ((e.ctrlKey || e.metaKey) && e.key === 'i') { e.preventDefault(); FullInventoryModal.open(); }
     });
@@ -4346,7 +4461,7 @@ function startWheels() {
 window.TelegramGame = {
   state: STATE, config: CONFIG,
   Currency, Inventory, Navigation, Settings,
-  SpinWheel, VoidSpinWheel, Leaderboard, Notifications,
+  SpinWheel, VoidSpinWheel, Subscription, Leaderboard, Notifications,
   PrizeModal, FullInventoryModal, Deposit, BottomNav
 };
 
