@@ -27,13 +27,21 @@ const CONFIG = {
   VOID_SPIN_DURATION: 4500,
   VOID_SPIN_MAX_SPEED: 25,
   VOID_CUBE_WIDTH: 120,
-  VOID_GAP_WIDTH: 48
-};
+  VOID_GAP_WIDTH: 48,
 
-const SUBSCRIPTION_GATE = {
-  REQUIRED: true,
-  CHANNEL_USERNAME: '@VoidGifts',
-  CHANNEL_URL: 'https://t.me/VoidGiftsOfficial'
+  // ── Telegram channel subscription gate ──
+  // Both wheels require this before they'll spin. CHANNEL_USERNAME is the
+  // @handle (without the @ in the chat_id your backend sends to Telegram's
+  // getChatMember — see the /check-subscription snippet notes). CHANNEL_URL
+  // is what actually opens when the user taps the "join" button in the popup.
+  SUBSCRIPTION_REQUIRED: true,
+  SUBSCRIPTION_CHANNEL_USERNAME: '@telegramchannelname',
+  SUBSCRIPTION_CHANNEL_URL: 'https://t.me/telegramchannelname',
+  // Your backend endpoint that checks membership server-side (bot token
+  // never touches the frontend). Expected response: { "subscribed": true|false }.
+  // Point this at whichever of your backends you add the endpoint to —
+  // defaults to the same data-store backend the app already talks to.
+  SUBSCRIPTION_CHECK_URL: 'https://vgdatastorage-production.up.railway.app/check-subscription'
 };
 
 const PRIZE_COIN_VALUES = {
@@ -297,7 +305,11 @@ const STATE = {
   redeemedCodes: [],
   isSyncing: false,
   lastBalanceSync: null,
-  syncIntervalId: null
+  syncIntervalId: null,
+
+  // Verified once per session so the user isn't re-pinged on every single
+  // spin — flip back to false if you'd rather re-check every time.
+  subscriptionVerified: false
 };
 
 // ============================================
@@ -440,13 +452,6 @@ const TRANSLATIONS = {
     paymentSuccessAdding: 'Payment successful! Adding {n} stars…',
     starsAdded: '{n} stars added!',
     notEnoughStars: 'Not enough Stars — need {n} ⭐',
-    subscribeRequiredTitle: 'Subscribe Required',
-    subscribeRequiredDesc: 'Join our channel to unlock Void Spin',
-    openChannel: 'Open Channel',
-    checkAgain: 'Check Again',
-    checking: 'Checking…',
-    subscriptionConfirmed: "You're in — go ahead and spin!",
-    notSubscribedYet: "Still not seeing it — make sure you joined, then check again",
     creatingInvoice: 'Creating invoice…',
     paymentCancelled: 'Payment cancelled',
     paymentFailed: 'Payment failed. Please try again.',
@@ -459,6 +464,13 @@ const TRANSLATIONS = {
     cacheCleared: 'Cache cleared',
     telegramWebAppUnavailable: 'Telegram WebApp not available',
     userIdUnavailable: 'User ID not available',
+    subscribeEyebrow: 'action required',
+    subscribeTitle: 'Subscribe Required',
+    subscribeDesc: 'Join our Telegram channel to unlock spinning.',
+    subscribeCheckBtn: 'OK',
+    subscribeChecking: 'Checking...',
+    notSubscribedYet: "You haven't joined yet. Join the channel, then tap OK.",
+    subscribeCheckFailed: "Couldn't verify right now — try again.",
     invoiceError: 'Error: {msg}',
     giftSentPopupTitle: 'Gift Sent!',
     giftSentPopupMessage: 'Your {name} gift has been sent to your Telegram account!',
@@ -657,6 +669,13 @@ const TRANSLATIONS = {
     cacheCleared: 'Кэш очищен',
     telegramWebAppUnavailable: 'Telegram WebApp недоступен',
     userIdUnavailable: 'ID пользователя недоступен',
+    subscribeEyebrow: 'требуется действие',
+    subscribeTitle: 'Требуется подписка',
+    subscribeDesc: 'Подпишитесь на наш Telegram-канал, чтобы открыть вращение.',
+    subscribeCheckBtn: 'OK',
+    subscribeChecking: 'Проверка...',
+    notSubscribedYet: 'Вы ещё не подписались. Подпишитесь на канал и нажмите OK.',
+    subscribeCheckFailed: 'Не удалось проверить, попробуйте ещё раз.',
     invoiceError: 'Ошибка: {msg}',
     giftSentPopupTitle: 'Подарок отправлен!',
     giftSentPopupMessage: 'Ваш подарок «{name}» отправлен в ваш аккаунт Telegram!',
@@ -825,6 +844,13 @@ const TRANSLATIONS = {
     cacheCleared: 'Caché borrada',
     telegramWebAppUnavailable: 'Telegram WebApp no disponible',
     userIdUnavailable: 'ID de usuario no disponible',
+    subscribeEyebrow: 'acción requerida',
+    subscribeTitle: 'Suscripción requerida',
+    subscribeDesc: 'Únete a nuestro canal de Telegram para poder girar.',
+    subscribeCheckBtn: 'OK',
+    subscribeChecking: 'Comprobando...',
+    notSubscribedYet: 'Aún no te has unido. Únete al canal y pulsa OK.',
+    subscribeCheckFailed: 'No se pudo verificar, inténtalo de nuevo.',
     invoiceError: 'Error: {msg}',
     giftSentPopupTitle: '¡Regalo enviado!',
     giftSentPopupMessage: '¡Tu regalo {name} ha sido enviado a tu cuenta de Telegram!',
@@ -993,6 +1019,13 @@ const TRANSLATIONS = {
     cacheCleared: 'Cache vidé',
     telegramWebAppUnavailable: 'Telegram WebApp non disponible',
     userIdUnavailable: "ID utilisateur non disponible",
+    subscribeEyebrow: 'action requise',
+    subscribeTitle: 'Abonnement requis',
+    subscribeDesc: 'Rejoignez notre chaîne Telegram pour débloquer la roue.',
+    subscribeCheckBtn: 'OK',
+    subscribeChecking: 'Vérification...',
+    notSubscribedYet: "Vous n'avez pas encore rejoint. Rejoignez la chaîne puis appuyez sur OK.",
+    subscribeCheckFailed: "Vérification impossible, réessayez.",
     invoiceError: 'Erreur : {msg}',
     giftSentPopupTitle: 'Cadeau envoyé !',
     giftSentPopupMessage: 'Votre cadeau {name} a été envoyé sur votre compte Telegram !',
@@ -1161,6 +1194,13 @@ const TRANSLATIONS = {
     cacheCleared: 'Cache geleert',
     telegramWebAppUnavailable: 'Telegram WebApp nicht verfügbar',
     userIdUnavailable: 'Benutzer-ID nicht verfügbar',
+    subscribeEyebrow: 'aktion erforderlich',
+    subscribeTitle: 'Abo erforderlich',
+    subscribeDesc: 'Tritt unserem Telegram-Kanal bei, um das Drehen freizuschalten.',
+    subscribeCheckBtn: 'OK',
+    subscribeChecking: 'Wird geprüft...',
+    notSubscribedYet: 'Du bist noch nicht beigetreten. Tritt dem Kanal bei und tippe auf OK.',
+    subscribeCheckFailed: 'Prüfung fehlgeschlagen, versuch es erneut.',
     invoiceError: 'Fehler: {msg}',
     giftSentPopupTitle: 'Geschenk gesendet!',
     giftSentPopupMessage: 'Dein {name}-Geschenk wurde an dein Telegram-Konto gesendet!',
@@ -1329,6 +1369,13 @@ const TRANSLATIONS = {
     cacheCleared: '缓存已清除',
     telegramWebAppUnavailable: 'Telegram WebApp 不可用',
     userIdUnavailable: '用户ID不可用',
+    subscribeEyebrow: '需要操作',
+    subscribeTitle: '需要订阅',
+    subscribeDesc: '加入我们的 Telegram 频道以解锁转盘。',
+    subscribeCheckBtn: '确定',
+    subscribeChecking: '检查中...',
+    notSubscribedYet: '你还没有加入。加入频道后点击确定。',
+    subscribeCheckFailed: '暂时无法验证，请重试。',
     invoiceError: '错误：{msg}',
     giftSentPopupTitle: '礼物已发送！',
     giftSentPopupMessage: '您的 {name} 礼物已发送到您的 Telegram 账户！',
@@ -3663,96 +3710,6 @@ const SpinWheel = {
 // toast + a quick shake on the button, no cubes move.
 // ============================================
 
-// ============================================
-// SUBSCRIPTION GATE — "join our channel to spin".
-//
-// spin() calls Subscription.guard() first. guard() asks the backend
-// (GET /check-subscription/:userId?channel=X on the Gift Relayer
-// service) whether the user is a member of SUBSCRIPTION_GATE.CHANNEL_
-// USERNAME. If yes, guard() resolves true and the caller proceeds
-// straight to spinning. If no (or the backend says "unknown"), guard()
-// shows the modal and resolves false — the caller bails out for this
-// click. Tapping "Check Again" in the modal re-runs the same check; on
-// success it closes the modal AND immediately triggers the spin, so
-// the user doesn't have to click Spin twice.
-// ============================================
-
-const Subscription = {
-  _pendingSpin: false,
-
-  async check(userId) {
-    if (!userId) return false;
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
-      const res = await fetch(
-        `${GIFT_RELAYER_URL}/check-subscription/${userId}?channel=${encodeURIComponent(SUBSCRIPTION_GATE.CHANNEL_USERNAME)}`,
-        { signal: controller.signal }
-      );
-      clearTimeout(timeout);
-      if (!res.ok) return false;
-      const data = await res.json();
-      return data.subscribed === true;
-    } catch (err) {
-      // FIX: this used to `return true` here — i.e. fail OPEN — so any
-      // network hiccup, CORS failure, timeout, or (critically) the relayer
-      // route not existing/being down would silently let the spin through
-      // with no subscription check at all. That's almost certainly why
-      // spins were going through unchecked. Fail CLOSED instead: an
-      // errored check is treated as "not verified", same as an explicit
-      // `false`, and the gate modal is shown.
-      console.warn('Subscription check failed, blocking spin:', err);
-      return false;
-    }
-  },
-
-  // Resolves true if the user is already subscribed (nothing shown).
-  // Resolves false and opens the modal otherwise. `resumeSpin` marks
-  // that VoidSpinWheel.spin() should auto-fire once they pass the check.
-  async guard(userId, { resumeSpin = false } = {}) {
-    if (!SUBSCRIPTION_GATE.REQUIRED) return true;
-    const ok = await this.check(userId);
-    if (ok) return true;
-    this._pendingSpin = resumeSpin;
-    this.show();
-    return false;
-  },
-
-  show() {
-    const modal = document.getElementById('subscribeModal');
-    const link  = document.getElementById('subscribeChannelLink');
-    if (link) link.textContent = `@${SUBSCRIPTION_GATE.CHANNEL_USERNAME}`;
-    modal?.classList.add('show');
-  },
-
-  hide() {
-    document.getElementById('subscribeModal')?.classList.remove('show');
-  },
-
-  openChannel() {
-    const url = SUBSCRIPTION_GATE.CHANNEL_URL;
-    STATE.tg?.openTelegramLink ? STATE.tg.openTelegramLink(url) : (STATE.tg?.openLink ? STATE.tg.openLink(url) : window.open(url, '_blank'));
-  },
-
-  async recheck() {
-    const btn = document.getElementById('subscribeCheckBtn');
-    const userId = STATE.tg?.initDataUnsafe?.user?.id;
-    if (btn) { btn.disabled = true; btn.dataset.origText = btn.textContent; btn.textContent = Utils.t('checking'); }
-
-    const ok = await this.check(userId);
-
-    if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origText || Utils.t('checkAgain'); }
-
-    if (ok) {
-      this.hide();
-      Utils.showToast(Utils.t('subscriptionConfirmed'), 'success');
-      if (this._pendingSpin) { this._pendingSpin = false; VoidSpinWheel.spin(); }
-    } else {
-      Utils.showToast(Utils.t('notSubscribedYet'), 'error');
-    }
-  }
-};
-
 const VoidSpinWheel = {
   init() {
     this.populateCubes();
@@ -3869,22 +3826,6 @@ const VoidSpinWheel = {
   },
 
   spin() {
-    if (STATE.voidIsSpinning) return;
-
-    const btn = document.getElementById('voidSpinButton');
-
-    // Subscription gate — checked before the cost check so a broke,
-    // unsubscribed user sees "join the channel" first, not "not enough
-    // Stars". guard() shows the modal itself and returns false if the
-    // user still needs to join; spin() bails out here, and Subscription.
-    // recheck() re-invokes spin() automatically once they pass.
-    const userId = STATE.tg?.initDataUnsafe?.user?.id;
-    Subscription.guard(userId, { resumeSpin: true }).then(ok => {
-      if (ok) this._spinAfterGate();
-    });
-  },
-
-  _spinAfterGate() {
     if (STATE.voidIsSpinning) return;
 
     const btn = document.getElementById('voidSpinButton');
@@ -4237,6 +4178,106 @@ const LanguageModal = {
 };
 
 // ============================================
+// SUBSCRIPTION GATE
+// ============================================
+// Gates both spin buttons behind a "join our Telegram channel" check.
+// The actual membership check MUST happen server-side (it needs the bot
+// token to call Telegram's getChatMember), so this module just calls
+// CONFIG.SUBSCRIPTION_CHECK_URL and expects { subscribed: true|false }
+// back. See the bottom of this file / the chat reply for a ready-to-drop
+// Node/Express snippet for that endpoint.
+
+const Subscription = {
+  pendingAction: null,
+
+  getUserId() {
+    return STATE.tg?.initDataUnsafe?.user?.id ?? null;
+  },
+
+  // Fails CLOSED: any network error, non-200, or missing user id is
+  // treated as "not subscribed" rather than letting the spin through.
+  // Flip the catch/early-return below to `return true` if you'd rather
+  // fail open while your backend is flaky/down.
+  async checkMembership() {
+    const userId = this.getUserId();
+    if (!userId) return false;
+    try {
+      const url = `${CONFIG.SUBSCRIPTION_CHECK_URL}?user_id=${encodeURIComponent(userId)}&channel=${encodeURIComponent(CONFIG.SUBSCRIPTION_CHANNEL_USERNAME)}`;
+      const res = await fetch(url);
+      if (!res.ok) return false;
+      const data = await res.json();
+      return !!data.subscribed;
+    } catch {
+      return false;
+    }
+  },
+
+  openChannel() {
+    const link = CONFIG.SUBSCRIPTION_CHANNEL_URL;
+    if (STATE.tg?.openTelegramLink) { STATE.tg.openTelegramLink(link); }
+    else if (STATE.tg?.openLink) { STATE.tg.openLink(link); }
+    else { window.open(link, '_blank'); }
+  },
+
+  show() {
+    const nameEl = document.getElementById('subscribeChannelName');
+    if (nameEl) nameEl.textContent = CONFIG.SUBSCRIPTION_CHANNEL_USERNAME;
+    document.getElementById('subscribeModal')?.classList.add('show');
+  },
+
+  hide() {
+    document.getElementById('subscribeModal')?.classList.remove('show');
+  },
+
+  // Called by the spin buttons instead of the spin function directly.
+  // Runs `spinFn` immediately once verified for the session; otherwise
+  // checks the backend first and opens the popup on a miss.
+  async gate(spinFn) {
+    if (!CONFIG.SUBSCRIPTION_REQUIRED || STATE.subscriptionVerified) { spinFn(); return; }
+    const ok = await this.checkMembership();
+    if (ok) {
+      STATE.subscriptionVerified = true;
+      spinFn();
+    } else {
+      this.pendingAction = spinFn;
+      this.show();
+    }
+  },
+
+  // "OK" button in the popup — re-checks, and on success closes the
+  // popup and fires whichever spin was waiting on it.
+  async recheck() {
+    const btn = document.getElementById('subscribeCheckBtn');
+    const originalLabel = btn?.textContent;
+    if (btn) { btn.disabled = true; btn.textContent = Utils.t('subscribeChecking'); }
+
+    const ok = await this.checkMembership();
+
+    if (btn) { btn.disabled = false; btn.textContent = originalLabel ?? Utils.t('subscribeCheckBtn'); }
+
+    if (ok) {
+      STATE.subscriptionVerified = true;
+      this.hide();
+      const action = this.pendingAction;
+      this.pendingAction = null;
+      if (action) action();
+    } else {
+      Utils.showToast(Utils.t('notSubscribedYet'), 'error');
+    }
+  },
+
+  init() {
+    const nameEl = document.getElementById('subscribeChannelName');
+    if (nameEl) nameEl.textContent = CONFIG.SUBSCRIPTION_CHANNEL_USERNAME;
+
+    document.getElementById('subscribeChannelBtn')?.addEventListener('click', () => this.openChannel());
+    document.getElementById('subscribeCheckBtn')?.addEventListener('click', () => this.recheck());
+    document.getElementById('subscribeModalClose')?.addEventListener('click', () => this.hide());
+    document.getElementById('subscribeModal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) this.hide(); });
+  }
+};
+
+// ============================================
 // PROMOCODE
 // ============================================
 
@@ -4342,19 +4383,14 @@ const EventListeners = {
     document.getElementById('convertBtn')?.addEventListener('click', () => PrizeModal.convert());
     document.getElementById('claimPrizeBtn')?.addEventListener('click', () => PrizeModal.claim());
 
-    document.getElementById('spinButton')?.addEventListener('click', () => SpinWheel.spin());
+    document.getElementById('spinButton')?.addEventListener('click', () => Subscription.gate(() => SpinWheel.spin()));
     document.getElementById('claimButton')?.addEventListener('click', () => SpinWheel.claimWin());
     document.getElementById('winModal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) SpinWheel.hideWin(); });
 
     // ── Void Spin ──
-    document.getElementById('voidSpinButton')?.addEventListener('click', () => VoidSpinWheel.spin());
+    document.getElementById('voidSpinButton')?.addEventListener('click', () => Subscription.gate(() => VoidSpinWheel.spin()));
     document.getElementById('voidClaimButton')?.addEventListener('click', () => VoidSpinWheel.claimWin());
     document.getElementById('voidWinModal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) VoidSpinWheel.hideWin(); });
-
-    // ── Subscription gate ──
-    document.getElementById('subscribeOpenBtn')?.addEventListener('click', () => Subscription.openChannel());
-    document.getElementById('subscribeCheckBtn')?.addEventListener('click', () => Subscription.recheck());
-    document.getElementById('subscribeModal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) Subscription.hide(); });
 
     document.getElementById('fullInventoryClose')?.addEventListener('click', () => FullInventoryModal.close());
     document.getElementById('fullInventoryModal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) FullInventoryModal.close(); });
@@ -4375,7 +4411,7 @@ const EventListeners = {
     document.getElementById('clearAllBtn')?.addEventListener('click', () => Notifications.clearAll());
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { PrizeModal.close(); FullInventoryModal.close(); LanguageModal.close(); Menu.closeAll(); SpinWheel.hideWin(); VoidSpinWheel.hideWin(); Subscription.hide(); }
+      if (e.key === 'Escape') { PrizeModal.close(); FullInventoryModal.close(); LanguageModal.close(); Menu.closeAll(); SpinWheel.hideWin(); VoidSpinWheel.hideWin(); }
       if ((e.ctrlKey || e.metaKey) && e.key === 'd') { e.preventDefault(); document.getElementById('debugPanel')?.classList.toggle('active'); }
       if ((e.ctrlKey || e.metaKey) && e.key === 'i') { e.preventDefault(); FullInventoryModal.open(); }
     });
@@ -4434,6 +4470,7 @@ async function initializeApp() {
   BottomNav.init();
   Settings.init();
   LanguageModal.init();
+  Subscription.init();
   WalletPickerModal.init();
   TonWalletManage.init();
   TonPurchaseFlow.init();
@@ -4470,7 +4507,7 @@ function startWheels() {
 window.TelegramGame = {
   state: STATE, config: CONFIG,
   Currency, Inventory, Navigation, Settings,
-  SpinWheel, VoidSpinWheel, Subscription, Leaderboard, Notifications,
+  SpinWheel, VoidSpinWheel, Leaderboard, Notifications,
   PrizeModal, FullInventoryModal, Deposit, BottomNav
 };
 
