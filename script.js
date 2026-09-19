@@ -244,12 +244,14 @@ const DEPOSIT_PACKAGES = {
   ],
   
   ton: [
-    { id: 'ton_tiny',   amount: 0.5, stars: 200,   popular: false },
-    { id: 'ton_small',  amount: 1,   stars: 400,   popular: false },
-    { id: 'ton_medium', amount: 3,   stars: 1200,  popular: true  },
-    { id: 'ton_large',  amount: 5,   stars: 2000,  popular: false },
-    { id: 'ton_xl',     amount: 10,  stars: 4000,  popular: false },
-    { id: 'ton_mega',   amount: 25,  stars: 10000, popular: false }
+    { id: 'ton_tiny',   amount: 1.86, stars: 200,   popular: false },
+    { id: 'ton_small',  amount: 4.66,   stars: 500,   popular: false },
+    { id: 'ton_medium', amount: 9.32,   stars: 1000,  popular: true  },
+    { id: 'ton_large',  amount: 23.3,   stars: 2500,  popular: false },
+    { id: 'ton_xl',     amount: 46.61,  stars: 5000,  popular: false },
+    { id: 'ton_mega',   amount: 93.22,  stars: 10000, popular: true  },
+    { id: 'ton_super',  amount: 233.05, stars: 25000, popular: false },
+    { id: 'ton_omega',  amount: 466.1,  stars: 50000, popular: false }
   ]
 };
 
